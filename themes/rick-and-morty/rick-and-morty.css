@@ -1,0 +1,1515 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap');
+
+/*
+ * ============================================================================
+ * RICK AND MORTY — HHD Custom Theme
+ * ============================================================================
+ *
+ * Wubba lubba dub dub! Interdimensional portal green, deep space black,
+ * Rick's hair blue, Morty's shirt yellow. Animated portal swirls,
+ * star field overlay, green glow everything.
+ *
+ * Works on any UNIT3D v8+ site.
+ *
+ * Palette:
+ *   Space:        #0b0c10 → #101420 → #161d2e (deep space black-blue)
+ *   Portal Green: #97ce4c  (THE green — portals, links, primary accent)
+ *   Rick Blue:    #00b4d8  (Rick's hair — secondary, info, completed)
+ *   Morty Yellow: #f0e14a  (Morty's shirt — featured, freeleech, gold)
+ *   Flesh Pink:   #f0c090  (warm accent — notifications, bumped)
+ *   Text:         #d4e8c2  (soft green-white)
+ *   Muted:        #6a8050  (dim green)
+ *   Danger:       #e64040  (Cronenberg red)
+ *   Success:      #97ce4c  (portal green)
+ *
+ * Fonts:
+ *   Body:      Nunito — rounded, friendly, reads like a cartoon
+ *   Headings:  Orbitron — clean sci-fi, Rick's tech aesthetic
+ *   Data:      Space Mono — techy monospace for stats/badges
+ */
+
+
+/* ==========================================================================
+ * @property — CSS Houdini for animated portal borders
+ * ======================================================================== */
+
+@property --portal-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@property --holo-pos {
+    syntax: "<percentage>";
+    initial-value: -100%;
+    inherits: false;
+}
+
+
+/* ==========================================================================
+ * KEYFRAMES
+ * ======================================================================== */
+
+@keyframes portal-spin {
+    to { --portal-angle: 360deg; }
+}
+
+@keyframes portal-holo {
+    to { --holo-pos: 200%; }
+}
+
+@keyframes star-drift {
+    0%   { background-position: 0 0, 0 0, 0 0; }
+    100% { background-position: 0 500px, 0 300px, 0 200px; }
+}
+
+@keyframes scanline-drift {
+    0%   { background-position: 0 0; }
+    100% { background-position: 0 100vh; }
+}
+
+@keyframes portal-pulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(151, 206, 76, 0.4); }
+    50%      { box-shadow: 0 0 12px rgba(151, 206, 76, 0.7), 0 0 25px rgba(151, 206, 76, 0.25); }
+}
+
+@keyframes portal-breathe {
+    0%, 100% { box-shadow: 0 0 10px rgba(151, 206, 76, 0.06), inset 0 0 20px rgba(151, 206, 76, 0.01); }
+    50%      { box-shadow: 0 0 20px rgba(151, 206, 76, 0.12), inset 0 0 30px rgba(151, 206, 76, 0.03); }
+}
+
+@keyframes portal-icon-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes cursor-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+/* Subtle portal shimmer on the body — like standing near a portal */
+@keyframes portal-ambient {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 0.5; }
+}
+
+
+/* ==========================================================================
+ * PORTAL SVG — inline data URI for the swirl icon
+ * A green spiral portal used as a decorative element
+ * ======================================================================== */
+
+/*
+ * We define the portal as a CSS custom property so it can be reused.
+ * It's a simple spiral/swirl in portal green.
+ */
+
+
+/* ==========================================================================
+ * CSS CUSTOM PROPERTIES
+ * ======================================================================== */
+
+:root {
+    --text-color: #d4e8c2;
+
+    /* Semantic colors — Rick and Morty palette */
+    --color-dark-magenta: hsl(280, 40%, 18%);
+    --color-dark-green: hsl(90, 50%, 16%);
+    --color-dark-blue: hsl(195, 60%, 14%);
+    --color-dark-red: hsl(0, 60%, 22%);
+    --color-red: hsl(0, 75%, 55%);
+    --color-light-red: hsl(0, 75%, 62%);
+    --color-green: hsl(90, 60%, 55%);
+    --color-light-green: hsl(90, 60%, 62%);
+    --color-yellow: hsl(55, 85%, 60%);
+    --color-light-yellow: hsl(55, 85%, 68%);
+    --color-magenta: hsl(280, 70%, 55%);
+    --color-light-magenta: hsl(280, 70%, 65%);
+    --color-dark-purple: hsl(260, 50%, 20%);
+    --color-purple: hsl(270, 60%, 55%);
+    --color-light-purple: hsl(270, 60%, 65%);
+    --color-blue: hsl(193, 100%, 42%);
+    --color-light-blue: hsl(193, 100%, 52%);
+    --color-bright-white: hsl(90, 20%, 96%);
+    --color-light-orange: hsl(30, 90%, 60%);
+
+    /* Message bubbles */
+    --message-bubble-bg: #131825;
+    --message-bubble-fg: var(--text-color);
+    --message-bubble-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 6px rgba(151, 206, 76, 0.04);
+    --message-bubble-border-radius: 10px;
+    --message-bubble-border: 1px solid rgba(151, 206, 76, 0.08);
+    --message-bubble-avatar-border-radius: 50%;
+
+    /* Achievements */
+    --achievement-fg: inherit;
+    --achievement-bg: #101420;
+    --achievement-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --achievement-progress-bg: #97ce4c;
+
+    /* Alerts */
+    --alert-bg: #0d1018;
+    --alert-fg: #a0bb88;
+    --alert-gap-color: #1e2a18;
+    --alert-gap-width: 1px;
+
+    /* Article cards */
+    --article-card-bg: #101420;
+    --article-card-fg: #a0bb88;
+    --article-card-head-fg: #a0bb88;
+    --article-card-time-fg: #6a8050;
+    --article-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    /* BBCode input */
+    --bbcode-input-header-bg: #101420;
+    --bbcode-input-body-bg: #101420;
+    --bbcode-input-border: 1px solid #1e2a18;
+    --bbcode-input-border-radius: 6px;
+
+    /* BBCode rendered */
+    --bbcode-rendered-fg-default: #d4e8c2;
+    --bbcode-rendered-fg-muted: #6a8050;
+    --bbcode-rendered-fg-subtle: #3d5030;
+    --bbcode-rendered-canvas-default: transparent;
+    --bbcode-rendered-canvas-subtle: #131825;
+    --bbcode-rendered-border-default: #1e2a18;
+    --bbcode-rendered-border-muted: #2a3828;
+    --bbcode-rendered-neutral-muted: #2a382866;
+    --bbcode-rendered-accent-fg: #97ce4c;
+    --bbcode-rendered-accent-emphasis: #00b4d8;
+    --bbcode-rendered-attention-subtle: #f0e14a;
+    --bbcode-rendered-danger-fg: #e64040cc;
+    --bbcode-rendered-quote-bg: #1e2a1822;
+    --bbcode-rendered-quote-border: #97ce4c;
+
+    /* Body */
+    --body-bg: #0b0c10;
+    --body-fg: var(--text-color);
+
+    /* Breadcrumbs */
+    --breadcrumb-fg: #4e6840;
+    --breadcrumb-active-fg: #a0bb88;
+    --breadcrumb-hover-fg: #97ce4c;
+    --breadcrumb-inactive-text-decoration: none;
+
+    /* Buttons — portal green */
+    --button-filled-bg: #97ce4c;
+    --button-filled-border: none;
+    --button-filled-border-radius: 8px;
+    --button-filled-fg: #0b0c10;
+
+    /* Buttons — outlined */
+    --button-outlined-bg: transparent;
+    --button-outlined-border: 1px solid #97ce4c;
+    --button-outlined-border-radius: 8px;
+    --button-outlined-fg: #97ce4c;
+
+    /* Buttons — text */
+    --button-text-bg: transparent;
+    --button-text-border: none;
+    --button-text-border-radius: 6px;
+    --button-text-fg: currentColor;
+
+    /* Chatbox */
+    --chatbox-message-bg: #101420;
+    --chatbox-button-fg: #4e6840;
+    --chatbox-button-hover-fg: #97ce4c;
+    --chatbox-users-bg: #0d1018;
+    --chatbox-tab-delete-fg: #e64040;
+    --chatbox-tab-delete-bg: #1a1e28;
+
+    /* Collectible cards */
+    --collectible-card-bg: #101420;
+    --collectible-card-border: 1px solid rgba(151, 206, 76, 0.06);
+    --collectible-card-border-radius: 8px;
+    --collectible-card-fg: #d4e8c2;
+    --collectible-card-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    --collectible-card-hover-fg: #fff;
+    --collectible-card-banner-available: #97ce4c;
+    --collectible-card-banner-last: #e64040;
+
+    /* Compact search */
+    --compact-search-bg: #101420;
+    --compact-search-box-shadow: 0 0 8px rgba(151, 206, 76, 0.04);
+    --compact-search-border-radius: 8px;
+    --compact-search-fg: var(--text-color);
+    --compact-search-padding: 5px;
+
+    /* Comparison */
+    --comparison-divider-fg: #fff;
+    --comparison-button-fg: #fff;
+
+    /* Data tables */
+    --data-table-border-radius: 0;
+    --data-table-fg: var(--text-color);
+    --data-table-th-bg: #0b0c10;
+    --data-table-thead-border: none;
+    --data-table-tr-border: 1px solid #161d2e;
+    --data-table-tr-even-bg: #0e1219;
+    --data-table-tr-hover-bg: #131825;
+    --data-table-tr-odd-bg: #0b0c10;
+    --data-table-tfoot-border: none;
+
+    /* Dialogs / Modals */
+    --dialog-bg: #131825;
+    --dialog-border: 1px solid rgba(151, 206, 76, 0.1);
+    --dialog-border-radius: 12px;
+    --dialog-box-shadow: 0 0 30px rgba(151, 206, 76, 0.05), 0 20px 40px rgba(0, 0, 0, 0.5);
+    --dialog-fg: var(--text-color);
+    --dialog-head-bg: #0b0c10;
+    --dialog-head-fg: #fff;
+
+    /* Donations */
+    --donation-border-color: #1e2a18;
+    --donation-box-shadow-color: rgba(151, 206, 76, 0.06);
+    --donation-primary-text-color: #d4e8c2;
+    --donation-secondary-text-color: #a0bb88;
+    --donation-background-color: #0b0c10;
+    --donation-price-days-color: #97ce4c;
+    --donation-chart-daily-bg: rgba(151, 206, 76, 0.2);
+    --donation-chart-daily-border: rgba(151, 206, 76, 1);
+    --donation-chart-monthly-bg: rgba(0, 180, 216, 0.2);
+    --donation-chart-monthly-border: rgba(0, 180, 216, 1);
+
+    /* Fieldsets */
+    --fieldset-bg: inherit;
+    --fieldset-fg: #a0bb88;
+    --fieldset-border-radius: 6px;
+    --fieldset-border: 1px solid #1e2a18;
+
+    /* Footer */
+    --footer-bg: #080910cc;
+    --footer-hr-fg: #161d2e;
+
+    /* Icon buttons */
+    --icon-button-bg: transparent;
+    --icon-button-border: none;
+    --icon-button-border-radius: 9999px;
+    --icon-button-fg: currentColor;
+    --icon-button-filled-bg: #97ce4c;
+    --icon-button-filled-fg: #0b0c10;
+    --icon-button-filled-border: none;
+
+    /* Input text */
+    --input-text-border: 1px solid #1e2a18;
+    --input-text-border-active: 2px solid #97ce4c;
+    --input-text-border-error: 1px solid #e64040;
+    --input-text-border-hover: 2px solid #4e6840;
+    --input-text-border-radius: 6px;
+    --input-text-fg: #d4e8c2;
+    --input-text-padding: 12px;
+    --input-text-padding-active: 11px;
+    --input-text-padding-hover: 11px;
+
+    /* Key-value tables */
+    --key-value-border-radius: 0;
+    --key-value-even-bg: #0e1219;
+    --key-value-fg: var(--text-color);
+    --key-value-odd-bg: #0b0c10;
+    --key-value-padding: 10px;
+
+    /* Labels */
+    --label-bg: #1e2a18;
+    --label-fg: #6a8050;
+    --label-fg-active: #97ce4c;
+    --label-fg-error: #e64040;
+    --label-fg-hover: #a0bb88;
+
+    /* Legends */
+    --legend-fg: #4e6840;
+    --legend-bg: transparent;
+    --legend-border: none;
+    --legend-border-radius: 0;
+
+    /* Mediahub cards */
+    --mediahub-card-bg: #0b0c10;
+    --mediahub-card-fg: #d4e8c2;
+    --mediahub-card-hover-fg: #fff;
+    --mediahub-card-border: none;
+    --mediahub-card-border-radius: 8px;
+    --mediahub-card-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+    /* Meta (torrent detail page) */
+    --meta-backdrop-filter: brightness(15%) blur(60px) saturate(1.5);
+    --meta-dropdown-backdrop-filter: brightness(2) blur(10px);
+    --meta-dropdown-bg: rgba(19, 24, 37, 0.92);
+    --meta-dropdown-backdrop-filter-hover: brightness(2) blur(10px);
+    --meta-dropdown-hover-bg: rgba(151, 206, 76, 0.06);
+    --meta-dropdown-fg: #a0bb88;
+    --meta-dropdown-hover-fg: #97ce4c;
+    --meta-description-fg: #d4e8c2;
+    --meta-id-tag-fg: #eee;
+    --meta-id-tag-bg: transparent;
+    --meta-id-tag-hover-fg: #fff;
+    --meta-id-tag-hover-bg: rgba(151, 206, 76, 0.06);
+    --meta-chips-heading-fg: #6a8050;
+    --meta-chip-icon-fg: #0b0c10;
+    --meta-chip-icon-hover-bg: #97ce4c;
+    --meta-chip-icon-bg: #a0bb88;
+    --meta-chip-name-fg: #d4e8c2;
+    --meta-chip-value-fg: #6a8050;
+    --meta-chip-value-hover-fg: #d4e8c2;
+    --meta-chip-backdrop-filter-hover: brightness(2) blur(10px);
+    --meta-chip-hover-bg: rgba(151, 206, 76, 0.04);
+    --meta-popup-bg: #0b0c10;
+    --meta-popup-fg: #6a8050;
+
+    /* Meter */
+    --meter-fg: #1e2a18;
+    --meter-bg: #97ce4c;
+
+    /* Notifications */
+    --notification-read: transparent;
+    --notification-unread: #97ce4c;
+
+    /* Options */
+    --option-bg: #131825;
+    --option-fg: #6a8050;
+
+    /* Pagination */
+    --paginate-bg: #0b0c10;
+    --paginate-bg-hover: #131825;
+    --paginate-bg-current: #101420;
+    --paginate-border-radius: 4px;
+    --paginate-fg: #6a8050;
+    --paginate-fg-disabled: #1e2a18;
+    --paginate-divider: #161d2e;
+
+    /* Panels */
+    --panel-action-fg: #a0bb88;
+    --panel-border: 1px solid rgba(151, 206, 76, 0.05);
+    --panel-bg: #101420;
+    --panel-fg: var(--text-color);
+    --panel-body-border-radius: 0;
+    --panel-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 6px rgba(151, 206, 76, 0.02);
+    --panel-border-radius: 8px;
+    --panel-head-bg: #0b0c10;
+    --panel-head-fg: #fff;
+    --panel-head-border-radius: 8px 8px 0 0;
+
+    /* Playlist cards */
+    --playlist-card-bg: #0b0c10;
+    --playlist-card-border: none;
+    --playlist-card-border-radius: 8px;
+    --playlist-card-box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    --playlist-card-fg: #a0bb88;
+    --playlist-card-missing-image-bg: #080910;
+    --playlist-card-missing-image-fg: #4e6840;
+
+    /* Forum posts */
+    --post-bg: #101420;
+    --post-fg: #d4e8c2;
+    --post-shadow: none;
+    --post-head-fg: var(--text-color);
+    --post-head-bg: none;
+    --post-toolbar-bg: #0d1018;
+    --post-toolbar-fg: #a0bb88;
+    --post-toolbar-hover-bg: #131825;
+    --post-toolbar-hover-fg: inherit;
+    --post-like-fg: #97ce4c;
+    --post-dislike-fg: #e64040;
+    --post-aside-bg: #0d1018;
+    --post-aside-fg: #d4e8c2;
+    --post-footer-fg: var(--text-color);
+
+    /* Prize */
+    --prize-bg: #0b0c10;
+    --prize-border-radius: 10px;
+    --prize-border: 1px solid rgba(151, 206, 76, 0.08);
+    --prize-box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    --prize-fg: #a0bb88;
+    --prize-heading-fg: #d4e8c2;
+    --prize-icon-primary-color: #97ce4c;
+    --prize-icon-secondary-color: #00b4d8;
+
+    /* Quick search */
+    --quick-search-bg: #0d1018;
+    --quick-search-fg: #d4e8c2;
+    --quick-search-border: 1px solid #1e2a18;
+    --quick-search-border-radius: 10px;
+    --quick-search-box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    --quick-search-selector-fg: #a0bb88;
+    --quick-search-selector-hover-bg: #131825;
+    --quick-search-selector-hover-fg: #97ce4c;
+    --quick-search-selector-selected-bg: #0b0c10;
+    --quick-search-selector-selected-fg: #97ce4c;
+    --quick-search-result-bg: #101420;
+    --quick-search-result-fg: #d4e8c2;
+    --quick-search-result-hover-bg: #131825;
+    --quick-search-result-hover-fg: #fff;
+    --quick-search-result-image-border-radius: 6px;
+    --quick-search-result-year-fg: #4e6840;
+    --quick-search-result-border: none;
+
+    /* Scrollbar */
+    --scrollbar-color: #97ce4c15;
+
+    /* Secondary nav */
+    --secondary-nav-bg: #0d1018;
+    --secondary-nav-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --secondary-nav-tab-fg: #6a8050;
+    --secondary-nav-tab-bg: inherit;
+    --secondary-nav-tab-active-text-decoration: underline #97ce4c 2px;
+    --secondary-nav-tab-hover-fg: #97ce4c;
+    --secondary-nav-tab-hover-bg: transparent;
+    --secondary-nav-tab-hover-text-decoration: underline #97ce4c 2px;
+    --secondary-nav-tab-menu-bg: #0b0c10;
+    --secondary-nav-tab-menu-fg: inherit;
+    --secondary-nav-tab-menu-border: 1px solid rgba(151, 206, 76, 0.08);
+    --secondary-nav-tab-menu-border-radius: 8px;
+    --secondary-nav-tab-menu-box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+
+    /* Selects */
+    --select-border: 1px solid #1e2a18;
+    --select-border-active: 2px solid #97ce4c;
+    --select-border-error: 1px solid #e64040;
+    --select-border-hover: 2px solid #4e6840;
+    --select-border-radius: 6px;
+    --select-fg: #d4e8c2;
+    --select-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%23a0bb88' d='M6 8l-1 1l5 5l5-5l-1-1l-4 4l-4-4z'/></svg>");
+    --select-padding: 11px 23px 11px 11px;
+    --select-padding-active: 10px 22px 10px 10px;
+    --select-padding-hover: 10px 22px 10px 10px;
+
+    /* Subforum listings */
+    --subforum-listing-odd-bg: #0e1219;
+    --subforum-listing-even-bg: transparent;
+    --subforum-listing-border: none;
+
+    /* Textarea */
+    --textarea-border: 1px solid #1e2a18;
+    --textarea-border-active: 2px solid #97ce4c;
+    --textarea-border-error: 1px solid #e64040;
+    --textarea-border-hover: 2px solid #4e6840;
+    --textarea-border-radius: 6px;
+    --textarea-fg: #d4e8c2;
+    --textarea-padding: 12px;
+    --textarea-padding-active: 11px;
+    --textarea-padding-hover: 11px;
+
+    /* Top nav */
+    --top-nav-bg: #0b0c10ee;
+    --top-nav-box-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    --top-nav-dropdown-fg: #a0bb88;
+    --top-nav-dropdown-hover-fg: #97ce4c;
+    --top-nav-dropdown-hover-bg: #131825;
+    --top-nav-dropdown-hover-text-decoration: none;
+    --top-nav-dropdown-menu-bg: #0d1018;
+    --top-nav-dropdown-menu-border: 1px solid rgba(151, 206, 76, 0.08);
+    --top-nav-dropdown-menu-border-radius: 8px;
+    --top-nav-dropdown-menu-box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    --top-nav-dropdown-menu-item-fg: #a0bb88;
+    --top-nav-dropdown-menu-item-bg: transparent;
+    --top-nav-dropdown-menu-item-hover-fg: #97ce4c;
+    --top-nav-dropdown-menu-item-hover-bg: #131825;
+    --top-nav-dropdown-menu-item-hover-text-decoration: none;
+    --top-nav-dropdown-menu-item-icon-fg: #d4e8c2;
+    --top-nav-dropdown-menu-item-icon-bg: #131825;
+    --top-nav-ratio-bar-fg: #d4e8c2;
+    --top-nav-icon-bar-icon-bg: #131825;
+    --top-nav-icon-bar-icon-fg: #a0bb88;
+    --top-nav-icon-bar-icon-border-radius: 50%;
+    --top-nav-icon-bar-icon-hover-bg: #1a2430;
+    --top-nav-icon-bar-icon-hover-fg: #97ce4c;
+    --top-nav-stats-fg: #6a8050;
+    --top-nav-toggle-fg: #6a8050;
+
+    /* Torrent cards */
+    --torrent-card-bg: #101420;
+    --torrent-card-fg: var(--text-color);
+    --torrent-card-border: 1px solid rgba(151, 206, 76, 0.04);
+    --torrent-card-head-bg: #0b0c10;
+    --torrent-card-head-fg: #fff;
+    --torrent-card-link-fg: #fff;
+    --torrent-card-genre-fg: #a0bb88;
+
+    /* Torrent groups */
+    --torrent-group-bg: #0b0c10;
+    --torrent-group-header-bg: #131825;
+    --torrent-group-text: white;
+    --torrent-group-text-muted: #6a8050;
+    --torrent-group-table-stripe-even: rgba(151, 206, 76, 0.012);
+    --torrent-group-table-stripe-odd: rgba(151, 206, 76, 0.03);
+    --torrent-group-hover-brightness-emphasis: 1.15;
+    --torrent-group-chip-border: rgba(151, 206, 76, 0.05);
+
+    /* Torrent rows */
+    --torrent-row-fg: #d4e8c2;
+    --torrent-row-visited-fg: #a0bb88;
+    --torrent-row-sticky-bg: #131825;
+    --torrent-row-format-fg: #d4e8c2;
+    --torrent-row-format-bg: #131825;
+    --torrent-row-buttons-fg: currentColor;
+    --torrent-row-seeders-fg: #97ce4c;
+    --torrent-row-leechers-fg: #e64040;
+    --torrent-row-completed-fg: #00b4d8;
+    --torrent-row-thanks-fg: #f0c090;
+    --torrent-row-comments-fg: #00b4d8;
+    --torrent-row-internal-fg: #f0e14a;
+    --torrent-row-personal-fg: #00b4d8;
+    --torrent-row-stream-optimized-fg: #00b4d8;
+    --torrent-row-featured-fg: #f0e14a;
+    --torrent-row-freeleech-fg: #f0e14a;
+    --torrent-row-double-upload-fg: #97ce4c;
+    --torrent-row-sticky-fg: #d4e8c2;
+    --torrent-row-highspeed-fg: #00b4d8;
+    --torrent-row-sd-fg: #6a8050;
+    --torrent-row-bumped-fg: #f0c090;
+
+    /* Torrent tags */
+    --torrent-tag-fg: #d4e8c2;
+    --torrent-tag-bg: transparent;
+    --torrent-tag-hover-fg: #fff;
+    --torrent-tag-hover-bg: rgba(151, 206, 76, 0.06);
+
+    /* User stat cards */
+    --user-stat-card-bg: #0b0c10;
+    --user-stat-card-fg: #d4e8c2;
+    --user-stat-card-border: 1px solid rgba(151, 206, 76, 0.04);
+    --user-stat-card-border-radius: 8px;
+    --user-stat-card-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* ==========================================================================
+ * TEXT COLOR UTILITIES
+ * ======================================================================== */
+
+.text-bright { color: #e8f5d8; }
+a.text-bright:focus, a.text-bright:hover { color: #fff; }
+.text-blue { color: #00b4d8; }
+.text-purple { color: var(--color-light-purple); }
+a { color: #97ce4c; }
+a:hover { color: #b8e878; text-shadow: 0 0 4px rgba(151, 206, 76, 0.2); }
+.text-green { color: #97ce4c; }
+.text-muted { color: #6a8050; }
+.text-red { color: #e64040; }
+.text-orange { color: #f0c090; }
+.text-pink { color: #f0c090; }
+.text-danger { color: #e64040; }
+.text-info { color: #00b4d8; }
+.text-success { color: #97ce4c; }
+.text-gold { color: #f0e14a; }
+
+
+/* ==========================================================================
+ * BADGES
+ * ======================================================================== */
+
+.badge-user {
+    border: 0;
+    box-shadow: none;
+    background-color: #131825;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.badge-extra {
+    border: 1px solid rgba(151, 206, 76, 0.1);
+    border-radius: 4px;
+}
+
+.footer__icon { color: #97ce4c; }
+i.torrent-icon { color: #97ce4c; }
+
+
+/* ==========================================================================
+ * FULL-PAGE OVERLAYS — the interdimensional atmosphere
+ * ======================================================================== */
+
+/* Standalone-mode baseline: when there's no main.scss underneath, html/body
+   get nothing for free — set bg + fg + font here. Cascades safely under
+   External mode (main.scss sets the same and wins via specificity / later load). */
+html {
+    font-size: 10px;
+}
+html, body {
+    color: #d4e8c2;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.467;
+}
+
+/* Star field — three layers of stars at different sizes drifting slowly */
+body {
+    background-color: #0b0c10;
+    background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 65%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 40%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(255, 255, 255, 0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 15%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 90%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 25% 50%, rgba(151, 206, 76, 0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 30%, rgba(0, 180, 216, 0.25) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 80% 60%, rgba(151, 206, 76, 0.2) 0%, transparent 100%),
+        radial-gradient(ellipse 80% 50% at 50% 100%, rgba(151, 206, 76, 0.03) 0%, transparent 60%);
+    background-attachment: fixed;
+}
+
+/* Subtle CRT scanlines */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.015) 3px,
+        rgba(0, 0, 0, 0.015) 6px
+    );
+    animation: scanline-drift 40s linear infinite;
+}
+
+/* Faint portal glow in the corner — like a portal is open nearby */
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(151, 206, 76, 0.04) 0%, transparent 70%);
+    z-index: 9998;
+    pointer-events: none;
+    animation: portal-ambient 6s ease-in-out infinite;
+}
+
+
+/* ==========================================================================
+ * BRANDING — portal green glow logo
+ * ======================================================================== */
+
+.top-nav__site-logo {
+    color: #97ce4c;
+    text-shadow: 0 0 10px rgba(151, 206, 76, 0.5), 0 0 25px rgba(151, 206, 76, 0.15);
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    font-size: 1.1em;
+}
+
+
+/* ==========================================================================
+ * TOP NAV — portal green glow underline
+ * ======================================================================== */
+
+.top-nav {
+    border-bottom: 1px solid rgba(151, 206, 76, 0.08);
+    position: relative;
+}
+.top-nav::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(151, 206, 76, 0.25), rgba(0, 180, 216, 0.15), rgba(151, 206, 76, 0.25), transparent);
+}
+
+/* Nav icon hover glow */
+.top-nav__icon-bar__icon { transition: box-shadow 0.3s ease; }
+.top-nav__icon-bar__icon:hover { box-shadow: 0 0 12px rgba(151, 206, 76, 0.3); }
+
+/* Notification badge pulse */
+.top-nav__icon-bar__icon .badge,
+.top-nav .badge {
+    animation: portal-pulse 2s ease-in-out infinite;
+    border: 1px solid rgba(151, 206, 76, 0.25);
+}
+
+
+/* ==========================================================================
+ * PANELS — portal-themed with spinning border + portal icon on headings
+ * ======================================================================== */
+
+.panel {
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
+}
+
+/* Rotating portal-color border on hover */
+.panel::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    background: conic-gradient(
+        from var(--portal-angle, 0deg),
+        #97ce4c,
+        #00b4d8,
+        #f0e14a,
+        #97ce4c
+    );
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    animation: portal-spin 5s linear infinite;
+}
+.panel:hover::after { opacity: 0.08; }
+
+/* Panel heading — portal icon + left accent + Orbitron font */
+.panel__heading {
+    border-bottom: 1px solid rgba(151, 206, 76, 0.08);
+    position: relative;
+    padding-left: 28px !important;
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 500;
+    font-size: 0.82em;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+/* Portal swirl icon before every panel heading */
+.panel__heading::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #97ce4c, #44aa22, #bbee77, #97ce4c);
+    box-shadow: 0 0 6px rgba(151, 206, 76, 0.4);
+    animation: portal-icon-spin 3s linear infinite;
+}
+
+
+/* ==========================================================================
+ * DATA TABLES — portal green accent
+ * ======================================================================== */
+
+.data-table tr:hover td:first-child { box-shadow: inset 3px 0 0 #97ce4c; }
+
+.data-table thead th {
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-size: 0.78em;
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 500;
+}
+.data-table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(151, 206, 76, 0.25), transparent);
+}
+
+
+/* ==========================================================================
+ * TORRENT CARDS — 3D hover lift + portal shimmer
+ * ======================================================================== */
+
+.torrent-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.torrent-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 12px rgba(151, 206, 76, 0.06);
+}
+
+/* Portal shimmer sweep on hover */
+.torrent-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 40%,
+        rgba(151, 206, 76, 0.03) 45%,
+        rgba(0, 180, 216, 0.04) 50%,
+        rgba(151, 206, 76, 0.03) 55%,
+        transparent 60%
+    );
+    transition: left 0.6s ease;
+    pointer-events: none;
+}
+.torrent-card:hover::after { left: 150%; }
+
+
+/* ==========================================================================
+ * FEATURED PANE — portal breathing glow
+ * ======================================================================== */
+
+.featured-pane {
+    border: 1px solid rgba(151, 206, 76, 0.12);
+    position: relative;
+    overflow: hidden;
+    animation: portal-breathe 4s ease-in-out infinite;
+}
+.featured-pane::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--holo-pos, -100%);
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(151, 206, 76, 0.02) 35%,
+        rgba(0, 180, 216, 0.03) 50%,
+        rgba(240, 225, 74, 0.02) 65%,
+        transparent 80%
+    );
+    animation: portal-holo 6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+/* ==========================================================================
+ * BUTTONS — portal green with glow + sweep shimmer
+ * ======================================================================== */
+
+.form__button--filled,
+.button--filled {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+.form__button--filled::before,
+.button--filled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%);
+    transition: left 0.5s ease;
+}
+.form__button--filled:hover,
+.button--filled:hover {
+    box-shadow: 0 0 18px rgba(151, 206, 76, 0.35), 0 0 35px rgba(151, 206, 76, 0.1);
+}
+.form__button--filled:hover::before,
+.button--filled:hover::before { left: 100%; }
+
+.form__button--outlined:hover,
+.button--outlined:hover {
+    box-shadow: 0 0 12px rgba(151, 206, 76, 0.25);
+    border-color: #b8e878;
+    color: #b8e878;
+}
+
+
+/* ==========================================================================
+ * ARTICLE CARDS — hover lift
+ * ======================================================================== */
+
+.article-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.article-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 8px rgba(151, 206, 76, 0.04);
+}
+
+
+/* ==========================================================================
+ * SWEETALERT2 — portal-styled modals
+ * ======================================================================== */
+
+.swal2-popup {
+    background: #131825 !important;
+    color: #d4e8c2 !important;
+    border: 1px solid rgba(151, 206, 76, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 0 30px rgba(151, 206, 76, 0.05), 0 25px 50px rgba(0, 0, 0, 0.5) !important;
+}
+.swal2-title { color: #fff !important; }
+.swal2-confirm {
+    background: #97ce4c !important;
+    color: #0b0c10 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 12px rgba(151, 206, 76, 0.3) !important;
+    font-weight: 600 !important;
+}
+
+
+/* ==========================================================================
+ * CHAT FRAME — interdimensional messaging
+ * ======================================================================== */
+
+#frame {
+    background: #101420;
+    border: 1px solid rgba(151, 206, 76, 0.06);
+    position: relative;
+}
+#frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #97ce4c, #00b4d8, #97ce4c, transparent);
+    z-index: 5;
+}
+#frame .content .messages ul li {
+    border-bottom: 1px dashed rgba(30, 42, 24, 0.5);
+    transition: background 0.2s ease;
+}
+#frame .content .messages ul li:hover { background: rgba(151, 206, 76, 0.015); }
+#frame .content .messages ul li > img {
+    border: 2px solid rgba(151, 206, 76, 0.25);
+    box-shadow: 0 0 6px rgba(151, 206, 76, 0.15);
+    border-radius: 50%;
+}
+#frame .content .message-input .wrap input {
+    color: #d4e8c2;
+    background: #0d1018;
+    border: 1px solid rgba(151, 206, 76, 0.08);
+    transition: all 0.3s ease;
+}
+#frame .content .message-input .wrap input:focus {
+    outline: none;
+    border-color: #97ce4c;
+    box-shadow: 0 0 10px rgba(151, 206, 76, 0.15);
+}
+#frame .content .message-input .wrap button {
+    background: #97ce4c;
+    color: #0b0c10;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+#frame .content .message-input .wrap button:hover {
+    background: #b8e878;
+    box-shadow: 0 0 12px rgba(151, 206, 76, 0.4);
+}
+
+/* Chat message bubbles */
+.sent > h4 {
+    display: block !important;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    background-color: var(--message-bubble-bg) !important;
+    padding: 4px 12px 0 8px;
+    margin: 4px 12px 0 48px;
+}
+.sent > div {
+    display: block !important;
+    border-bottom-right-radius: 12px;
+    background-color: var(--message-bubble-bg) !important;
+    padding: 0 12px 4px 8px !important;
+    margin: 0 12px 4px 48px !important;
+}
+.sent > .system { border-bottom-left-radius: 12px; }
+.sent > div:not(.system):before {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 38px;
+    width: 0;
+    border-right: 10px solid var(--message-bubble-bg) !important;
+    border-top: 10px solid transparent;
+}
+#frame .content .messages ul li.sent {
+    border: 0;
+    display: table;
+    max-width: 85%;
+    width: auto;
+}
+#frame .content .messages ul li.sent img.chat-user-image {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(151, 206, 76, 0.2);
+}
+
+/* Typing indicator */
+.chatbox .typing {
+    color: #a0bb88;
+}
+
+
+/* ==========================================================================
+ * SCROLLBAR — portal green
+ * ======================================================================== */
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0b0c10; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #1e2a18, #131825);
+    border-radius: 4px;
+    border: 1px solid rgba(151, 206, 76, 0.06);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #97ce4c, #44aa22);
+    box-shadow: 0 0 8px rgba(151, 206, 76, 0.4);
+}
+
+
+/* ==========================================================================
+ * INPUTS — portal green focus glow
+ * ======================================================================== */
+
+input:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 8px rgba(151, 206, 76, 0.18), 0 0 2px rgba(151, 206, 76, 0.08);
+}
+
+
+/* ==========================================================================
+ * VIRTUAL SELECT — styled dropdowns
+ * ======================================================================== */
+
+.vscomp-toggle-button {
+    background-color: #101420;
+    border-color: #1e2a18;
+    transition: border-color 0.3s ease;
+}
+.vscomp-toggle-button:hover { border-color: rgba(151, 206, 76, 0.25); }
+.vscomp-dropbox {
+    background-color: #0d1018;
+    border-color: rgba(151, 206, 76, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+.vscomp-option { transition: background-color 0.2s ease; }
+.vscomp-option:hover, .vscomp-option.focused { background-color: #131825; }
+.vscomp-option.selected { background-color: rgba(151, 206, 76, 0.08); border-left: 2px solid #97ce4c; }
+.vscomp-search-input { background-color: #0b0c10; color: #d4e8c2; border-color: #1e2a18; }
+
+
+/* ==========================================================================
+ * USER STAT CARDS — hover lift + portal green top accent
+ * ======================================================================== */
+
+.user-stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.user-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3), 0 0 6px rgba(151, 206, 76, 0.06);
+}
+.user-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #97ce4c, #00b4d8);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.user-stat-card:hover::before { opacity: 1; }
+
+
+/* ==========================================================================
+ * MEDIAHUB, PLAYLIST, ACHIEVEMENT CARDS — hover effects
+ * ======================================================================== */
+
+.mediahub-card, .playlist-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.mediahub-card:hover, .playlist-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 8px rgba(151, 206, 76, 0.04);
+}
+
+.achievement { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.achievement:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 12px rgba(151, 206, 76, 0.08);
+}
+
+
+/* ==========================================================================
+ * LINKS — portal green underline animation (content areas)
+ * ======================================================================== */
+
+.panel__body a:not([class]),
+.post__body a:not([class]),
+.bbcode-rendered a:not([class]) {
+    position: relative;
+    text-decoration: none;
+}
+.panel__body a:not([class])::after,
+.post__body a:not([class])::after,
+.bbcode-rendered a:not([class])::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #97ce4c;
+    box-shadow: 0 0 4px rgba(151, 206, 76, 0.4);
+    transition: width 0.3s ease;
+}
+.panel__body a:not([class]):hover::after,
+.post__body a:not([class]):hover::after,
+.bbcode-rendered a:not([class]):hover::after {
+    width: 100%;
+}
+
+
+/* ==========================================================================
+ * PORTAL ICONS — decorative portal swirls throughout the UI
+ * ======================================================================== */
+
+/* Portal icon on secondary nav active tab */
+.secondary-nav__tab:hover { text-shadow: 0 0 6px rgba(151, 206, 76, 0.2); }
+
+/* Mini portal spinner on the quick search input */
+.quick-search__results {
+    position: relative;
+    border: 1px solid rgba(151, 206, 76, 0.08);
+}
+.quick-search__results::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #97ce4c, #00b4d8, #97ce4c, transparent);
+}
+
+/* Portal swirl on dialog headers */
+.dialog__header::before,
+.swal2-header::before {
+    content: '\1F30A';
+    margin-right: 6px;
+    filter: hue-rotate(80deg);
+}
+
+
+/* ==========================================================================
+ * MISC — seeders/leechers glow, HRs, footer, badges, pagination
+ * ======================================================================== */
+
+.torrent-row__seeders { text-shadow: 0 0 4px rgba(151, 206, 76, 0.2); }
+.torrent-row__leechers { text-shadow: 0 0 4px rgba(230, 64, 64, 0.2); }
+
+.pagination__link { transition: all 0.2s ease; }
+.pagination__link:hover { box-shadow: 0 0 8px rgba(151, 206, 76, 0.15); }
+
+.breadcrumb a:hover { text-shadow: 0 0 6px rgba(151, 206, 76, 0.2); }
+
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(151, 206, 76, 0.2), rgba(0, 180, 216, 0.12), rgba(151, 206, 76, 0.2), transparent);
+}
+
+.meter__bar { box-shadow: 0 0 6px rgba(151, 206, 76, 0.2); }
+
+/* Footer neon top border */
+footer, .footer { position: relative; }
+footer::before, .footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(151, 206, 76, 0.25), rgba(0, 180, 216, 0.15), rgba(240, 225, 74, 0.1), transparent);
+}
+
+.badge-user:hover { box-shadow: 0 0 8px rgba(151, 206, 76, 0.15); }
+.badge-extra:hover { border-color: rgba(151, 206, 76, 0.2); box-shadow: 0 0 6px rgba(151, 206, 76, 0.15); }
+
+.donation-card:hover { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(151, 206, 76, 0.04); }
+
+.post { transition: border-color 0.3s ease; }
+.post:hover { border-color: rgba(151, 206, 76, 0.06); }
+
+h1, h2, h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+
+/* ==========================================================================
+ * TEXT SELECTION — portal green
+ * ======================================================================== */
+
+::selection { background: rgba(151, 206, 76, 0.25); color: #fff; }
+::-moz-selection { background: rgba(151, 206, 76, 0.25); color: #fff; }
+
+
+/* ==========================================================================
+ * FOCUS RINGS — portal green
+ * ======================================================================== */
+
+:focus-visible {
+    outline: 2px solid rgba(151, 206, 76, 0.4);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+ * KEY-VALUE TABLES — green left accent
+ * ======================================================================== */
+
+.key-value__row:nth-child(odd) { position: relative; }
+.key-value__row:nth-child(odd)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(151, 206, 76, 0.12);
+}
+
+
+/* ==========================================================================
+ * TYPOGRAPHY — the interdimensional font stack
+ * ======================================================================== */
+
+/* Body — Nunito: rounded, warm, cartoon-friendly readability */
+body {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-weight: 400;
+}
+
+/* Force Nunito inheritance on elements that reset their own font */
+.panel__body,
+.post__body,
+.bbcode-rendered,
+.alert,
+.dialog,
+p,
+li,
+td,
+th,
+label,
+span:not([class*="fa-"]):not([class*="fad-"]) {
+    font-family: inherit !important;
+}
+
+/* Headings — Orbitron: clean sci-fi for Rick's tech universe */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif !important;
+}
+
+/* Panel headings — Orbitron with sci-fi styling */
+.panel__heading {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 500;
+    font-size: 0.82em;
+}
+
+/* Nav items — Orbitron for that dimension-hopping control panel feel */
+.top-nav__dropdown--link,
+.top-nav__dropdown--text {
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 0.78em;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Secondary nav tabs — Orbitron */
+.secondary-nav__tab,
+.nav-tabsV2 a,
+.breadcrumbV2 {
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 0.8em;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Site logo — Orbitron bold, biggest and most prominent */
+.top-nav__site-logo {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+/* Stats / data numbers — Space Mono for that tech readout look */
+.top-nav__stats,
+.top-nav__ratio-bar,
+.torrent-row__seeders,
+.torrent-row__leechers,
+.torrent-row__completed,
+.torrent-row__size,
+.torrent-row__comments,
+.torrent-row__thanks,
+.user-stat-card__value,
+.badge-extra,
+.meter__text,
+.pagination__link {
+    font-family: 'Space Mono', monospace !important;
+    font-weight: 400;
+}
+
+/* Torrent size / file count in cards and rows */
+.torrent-card__size,
+.torrent-card__seeders,
+.torrent-card__leechers {
+    font-family: 'Space Mono', monospace !important;
+}
+
+/* Data table headers — Orbitron for column labels */
+.data-table thead th {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 500;
+    font-size: 0.78em;
+    letter-spacing: 0.8px;
+}
+
+/* Data table cells with numbers — Space Mono */
+.data-table td {
+    font-family: 'Nunito', sans-serif;
+}
+
+/* Key-value tables (torrent detail sidebar etc.) */
+.key-value__key {
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 0.78em;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+.key-value__value {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* Buttons — Nunito bold, friendly but confident */
+.form__button--filled,
+.form__button--outlined,
+.button--filled,
+.button--outlined {
+    font-family: 'Nunito', sans-serif !important;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* Input fields — Nunito for comfortable typing */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="number"],
+textarea,
+select {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* BBCode / MediaInfo code blocks — Space Mono for tech readouts */
+.bbcode-rendered pre,
+.bbcode-rendered code,
+.mediainfo,
+code,
+pre {
+    font-family: 'Space Mono', 'Consolas', 'Liberation Mono', monospace !important;
+}
+
+/* Chat messages — Nunito for readability */
+#frame .content .messages ul li {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* Chat usernames — Orbitron makes them stand out */
+#frame .content .messages ul li h4 {
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 0.82em;
+    font-weight: 500;
+}
+
+/* Forum post username/header */
+.post__header,
+.post__username {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 500;
+}
+
+/* Torrent title links — Nunito bold, the most-read text on the site */
+.torrent-card__link,
+.torrent-row__link,
+.torrent-card__title {
+    font-family: 'Nunito', sans-serif !important;
+    font-weight: 700;
+}
+
+/* Meta page (torrent detail) title */
+.meta__title {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Meta chips labels */
+.meta__chip-name,
+.meta__chips-heading {
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 0.75em;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.meta__chip-value {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* Dropdown menus — Nunito for readability */
+.top-nav__dropdown-menu-item,
+.secondary-nav__tab-menu a {
+    font-family: 'Nunito', sans-serif !important;
+    font-weight: 600;
+}
+
+/* Article card headings */
+.article-card__heading {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 700;
+}
+
+/* Achievement titles */
+.achievement__title {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 500;
+    font-size: 0.85em;
+}
+
+/* Footer text */
+footer, .footer {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* Protect FontAwesome icons from font override */
+.fa, .fas, .far, .fal, .fad, .fab,
+[class*=" fa-"],
+[class^="fa-"] {
+    font-family: "Font Awesome 6 Pro" !important;
+}
+.fab, [class*="fa-brands"] {
+    font-family: "Font Awesome 6 Brands" !important;
+}
+.fad, [class*="fa-duotone"] {
+    font-family: "Font Awesome 6 Duotone" !important;
+}
+
+
+/* ==========================================================================
+ * REDUCED MOTION
+ * ======================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    body::before, body::after { animation: none !important; }
+    .panel__heading::before { animation: none !important; }
+}

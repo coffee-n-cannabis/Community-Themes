@@ -1,0 +1,1245 @@
+/*
+ * ============================================================================
+ * SYNTHWAVE — HHD Custom Theme
+ * ============================================================================
+ *
+ * 80s retrowave aesthetic. Deep purple-black backgrounds, neon pink and
+ * purple accents, sunset orange highlights. Perspective grid overlay,
+ * neon glow effects, holographic shimmer on cards, gradient branding.
+ *
+ * Works on any UNIT3D v8+ site — paste the URL into:
+ *   General Settings > External CSS Stylesheet (stacks on top of theme)
+ *   OR Standalone CSS Stylesheet (replaces theme entirely)
+ *
+ * Palette:
+ *   Backgrounds:  #0d0618 → #150b25 → #1c1030 → #241535 (layered purple-black)
+ *   Primary:      #ff2d95  (hot pink — links, buttons, active states)
+ *   Secondary:    #b24dff  (electric purple — visited, info, completed)
+ *   Tertiary:     #ff6b35  (sunset orange — featured, bumped)
+ *   Text:         #e8d5f5  (soft lavender)
+ *   Muted:        #8a6aa0  (dusty purple)
+ *   Danger:       #ff1744  (neon red)
+ *   Success:      #39ff14  (neon green — seeders)
+ *
+ * Compatibility: UNIT3D v8.x / v9.x (CSS custom properties + BEM classes)
+ * Performance:   Overlays are pointer-events:none, GPU-composited
+ * Accessibility: Respects prefers-reduced-motion
+ */
+
+
+/* ==========================================================================
+ * @property — CSS Houdini animated custom properties
+ * Chrome/Edge 85+, Safari 15.4+, Firefox 128+
+ * Fallback: borders just won't animate (still looks fine static)
+ * ======================================================================== */
+
+@property --synth-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@property --holo-pos {
+    syntax: "<percentage>";
+    initial-value: -100%;
+    inherits: false;
+}
+
+
+/* ==========================================================================
+ * KEYFRAMES
+ * ======================================================================== */
+
+/* Rotating angle for conic-gradient borders (panels on hover) */
+@keyframes synth-rotate {
+    to { --synth-angle: 360deg; }
+}
+
+/* Holographic shimmer sweep */
+@keyframes synth-holo {
+    to { --holo-pos: 200%; }
+}
+
+/* Slow scanline drift — retro CRT feel */
+@keyframes synth-scanline {
+    0%   { background-position: 0 0; }
+    100% { background-position: 0 100vh; }
+}
+
+/* Neon pulse for notification badges */
+@keyframes synth-pulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(255, 45, 149, 0.4); }
+    50%      { box-shadow: 0 0 12px rgba(255, 45, 149, 0.7), 0 0 25px rgba(255, 45, 149, 0.3); }
+}
+
+/* Subtle breathing glow on featured content */
+@keyframes synth-breathe {
+    0%, 100% { box-shadow: 0 0 10px rgba(178, 77, 255, 0.06), inset 0 0 20px rgba(178, 77, 255, 0.01); }
+    50%      { box-shadow: 0 0 20px rgba(178, 77, 255, 0.12), inset 0 0 30px rgba(178, 77, 255, 0.03); }
+}
+
+/* Sun/horizon glow pulse */
+@keyframes synth-horizon {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 0.6; }
+}
+
+
+/* ==========================================================================
+ * CSS CUSTOM PROPERTIES — the full UNIT3D variable set
+ * ======================================================================== */
+
+:root {
+    --text-color: #e8d5f5;
+
+    /* Semantic colors */
+    --color-dark-magenta: hsl(300, 50%, 20%);
+    --color-dark-green: hsl(140, 50%, 16%);
+    --color-dark-blue: hsl(270, 50%, 18%);
+    --color-dark-red: hsl(340, 60%, 20%);
+    --color-red: hsl(340, 100%, 55%);
+    --color-light-red: hsl(340, 100%, 65%);
+    --color-green: hsl(110, 100%, 54%);
+    --color-light-green: hsl(110, 100%, 64%);
+    --color-yellow: hsl(35, 100%, 55%);
+    --color-light-yellow: hsl(35, 100%, 65%);
+    --color-magenta: hsl(330, 100%, 55%);
+    --color-light-magenta: hsl(330, 100%, 65%);
+    --color-dark-purple: hsl(275, 55%, 22%);
+    --color-purple: hsl(270, 100%, 65%);
+    --color-light-purple: hsl(270, 100%, 75%);
+    --color-blue: hsl(330, 100%, 60%);
+    --color-light-blue: hsl(330, 100%, 70%);
+    --color-bright-white: hsl(280, 20%, 97%);
+    --color-light-orange: hsl(20, 100%, 60%);
+
+    /* Message bubbles */
+    --message-bubble-bg: #1c1030;
+    --message-bubble-fg: var(--text-color);
+    --message-bubble-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 8px rgba(178, 77, 255, 0.06);
+    --message-bubble-border-radius: 8px;
+    --message-bubble-border: 1px solid rgba(178, 77, 255, 0.12);
+    --message-bubble-avatar-border-radius: 4px;
+
+    /* Achievements */
+    --achievement-fg: inherit;
+    --achievement-bg: #150b25;
+    --achievement-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 6px rgba(178, 77, 255, 0.05);
+    --achievement-progress-bg: #ff2d95;
+
+    /* Alerts */
+    --alert-bg: #120820;
+    --alert-fg: #c4a8d8;
+    --alert-gap-color: #2d1a42;
+    --alert-gap-width: 1px;
+
+    /* Article cards */
+    --article-card-bg: #150b25;
+    --article-card-fg: #c4a8d8;
+    --article-card-head-fg: #c4a8d8;
+    --article-card-time-fg: #8a6aa0;
+    --article-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    /* BBCode input */
+    --bbcode-input-header-bg: #150b25;
+    --bbcode-input-body-bg: #150b25;
+    --bbcode-input-border: 1px solid #2d1a42;
+    --bbcode-input-border-radius: 5px;
+
+    /* BBCode rendered */
+    --bbcode-rendered-fg-default: #e8d5f5;
+    --bbcode-rendered-fg-muted: #8a6aa0;
+    --bbcode-rendered-fg-subtle: #5a3d70;
+    --bbcode-rendered-canvas-default: transparent;
+    --bbcode-rendered-canvas-subtle: #1c1030;
+    --bbcode-rendered-border-default: #2d1a42;
+    --bbcode-rendered-border-muted: #3d2555;
+    --bbcode-rendered-neutral-muted: #3d255566;
+    --bbcode-rendered-accent-fg: #ff2d95;
+    --bbcode-rendered-accent-emphasis: #b24dff;
+    --bbcode-rendered-attention-subtle: #ff6b35;
+    --bbcode-rendered-danger-fg: #ff1744cc;
+    --bbcode-rendered-quote-bg: #2d1a4222;
+    --bbcode-rendered-quote-border: #ff2d95;
+
+    /* Body */
+    --body-bg: #0d0618;
+    --body-fg: var(--text-color);
+
+    /* Breadcrumbs */
+    --breadcrumb-fg: #6a4a80;
+    --breadcrumb-active-fg: #c4a8d8;
+    --breadcrumb-hover-fg: #ff2d95;
+    --breadcrumb-inactive-text-decoration: none;
+
+    /* Buttons — filled */
+    --button-filled-bg: linear-gradient(135deg, #ff2d95, #b24dff);
+    --button-filled-border: none;
+    --button-filled-border-radius: 6px;
+    --button-filled-fg: #fff;
+
+    /* Buttons — outlined */
+    --button-outlined-bg: transparent;
+    --button-outlined-border: 1px solid #ff2d95;
+    --button-outlined-border-radius: 6px;
+    --button-outlined-fg: #ff2d95;
+
+    /* Buttons — text */
+    --button-text-bg: transparent;
+    --button-text-border: none;
+    --button-text-border-radius: 5px;
+    --button-text-fg: currentColor;
+
+    /* Chatbox */
+    --chatbox-message-bg: #150b25;
+    --chatbox-button-fg: #6a4a80;
+    --chatbox-button-hover-fg: #ff2d95;
+    --chatbox-users-bg: #120820;
+    --chatbox-tab-delete-fg: #ff1744;
+    --chatbox-tab-delete-bg: #241535;
+
+    /* Collectible cards */
+    --collectible-card-bg: #150b25;
+    --collectible-card-border: 1px solid rgba(178, 77, 255, 0.08);
+    --collectible-card-border-radius: 6px;
+    --collectible-card-fg: #e8d5f5;
+    --collectible-card-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --collectible-card-hover-fg: #fff;
+    --collectible-card-banner-available: #b24dff;
+    --collectible-card-banner-last: #ff2d95;
+
+    /* Compact search */
+    --compact-search-bg: #150b25;
+    --compact-search-box-shadow: 0 0 8px rgba(178, 77, 255, 0.06);
+    --compact-search-border-radius: 6px;
+    --compact-search-fg: var(--text-color);
+    --compact-search-padding: 5px;
+
+    /* Comparison */
+    --comparison-divider-fg: #fff;
+    --comparison-button-fg: #fff;
+
+    /* Data tables */
+    --data-table-border-radius: 0;
+    --data-table-fg: var(--text-color);
+    --data-table-th-bg: #0d0618;
+    --data-table-thead-border: none;
+    --data-table-tr-border: 1px solid #241535;
+    --data-table-tr-even-bg: #150b25;
+    --data-table-tr-hover-bg: #1c1030;
+    --data-table-tr-odd-bg: #120820;
+    --data-table-tfoot-border: none;
+
+    /* Dialogs / Modals */
+    --dialog-bg: #1c1030;
+    --dialog-border: 1px solid rgba(178, 77, 255, 0.15);
+    --dialog-border-radius: 8px;
+    --dialog-box-shadow: 0 0 30px rgba(255, 45, 149, 0.08), 0 20px 40px rgba(0, 0, 0, 0.5);
+    --dialog-fg: var(--text-color);
+    --dialog-head-bg: #0d0618;
+    --dialog-head-fg: #fff;
+
+    /* Donations */
+    --donation-border-color: #2d1a42;
+    --donation-box-shadow-color: rgba(178, 77, 255, 0.08);
+    --donation-primary-text-color: #e8d5f5;
+    --donation-secondary-text-color: #c4a8d8;
+    --donation-background-color: #0d0618;
+    --donation-price-days-color: #ff2d95;
+    --donation-chart-daily-bg: rgba(57, 255, 20, 0.2);
+    --donation-chart-daily-border: rgba(57, 255, 20, 1);
+    --donation-chart-monthly-bg: rgba(178, 77, 255, 0.2);
+    --donation-chart-monthly-border: rgba(178, 77, 255, 1);
+
+    /* Fieldsets */
+    --fieldset-bg: inherit;
+    --fieldset-fg: #c4a8d8;
+    --fieldset-border-radius: 5px;
+    --fieldset-border: 1px solid #2d1a42;
+
+    /* Footer */
+    --footer-bg: #0d0618cc;
+    --footer-hr-fg: #241535;
+
+    /* Icon buttons */
+    --icon-button-bg: transparent;
+    --icon-button-border: none;
+    --icon-button-border-radius: 9999px;
+    --icon-button-fg: currentColor;
+    --icon-button-filled-bg: #ff2d95;
+    --icon-button-filled-fg: white;
+    --icon-button-filled-border: none;
+
+    /* Input text */
+    --input-text-border: 1px solid #2d1a42;
+    --input-text-border-active: 2px solid #ff2d95;
+    --input-text-border-error: 1px solid #ff1744;
+    --input-text-border-hover: 2px solid #6a4a80;
+    --input-text-border-radius: 5px;
+    --input-text-fg: #e8d5f5;
+    --input-text-padding: 12px;
+    --input-text-padding-active: 11px;
+    --input-text-padding-hover: 11px;
+
+    /* Key-value tables */
+    --key-value-border-radius: 0;
+    --key-value-even-bg: #150b25;
+    --key-value-fg: var(--text-color);
+    --key-value-odd-bg: #120820;
+    --key-value-padding: 10px;
+
+    /* Labels */
+    --label-bg: #2d1a42;
+    --label-fg: #8a6aa0;
+    --label-fg-active: #ff2d95;
+    --label-fg-error: #ff1744;
+    --label-fg-hover: #c4a8d8;
+
+    /* Legends */
+    --legend-fg: #6a4a80;
+    --legend-bg: transparent;
+    --legend-border: none;
+    --legend-border-radius: 0;
+
+    /* Mediahub cards */
+    --mediahub-card-bg: #0d0618;
+    --mediahub-card-fg: #e8d5f5;
+    --mediahub-card-hover-fg: #fff;
+    --mediahub-card-border: none;
+    --mediahub-card-border-radius: 5px;
+    --mediahub-card-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+    /* Meta (torrent detail page) */
+    --meta-backdrop-filter: brightness(15%) blur(60px) saturate(1.5);
+    --meta-dropdown-backdrop-filter: brightness(2) blur(10px);
+    --meta-dropdown-bg: rgba(28, 16, 48, 0.9);
+    --meta-dropdown-backdrop-filter-hover: brightness(2) blur(10px);
+    --meta-dropdown-hover-bg: rgba(255, 45, 149, 0.08);
+    --meta-dropdown-fg: #c4a8d8;
+    --meta-dropdown-hover-fg: #ff2d95;
+    --meta-description-fg: #e8d5f5;
+    --meta-id-tag-fg: #eee;
+    --meta-id-tag-bg: transparent;
+    --meta-id-tag-hover-fg: #fff;
+    --meta-id-tag-hover-bg: rgba(255, 45, 149, 0.08);
+    --meta-chips-heading-fg: #8a6aa0;
+    --meta-chip-icon-fg: #0d0618;
+    --meta-chip-icon-hover-bg: #ff2d95;
+    --meta-chip-icon-bg: #c4a8d8;
+    --meta-chip-name-fg: #e8d5f5;
+    --meta-chip-value-fg: #8a6aa0;
+    --meta-chip-value-hover-fg: #e8d5f5;
+    --meta-chip-backdrop-filter-hover: brightness(2) blur(10px);
+    --meta-chip-hover-bg: rgba(255, 45, 149, 0.06);
+    --meta-popup-bg: #0d0618;
+    --meta-popup-fg: #8a6aa0;
+
+    /* Meter */
+    --meter-fg: #2d1a42;
+    --meter-bg: #ff2d95;
+
+    /* Notifications */
+    --notification-read: transparent;
+    --notification-unread: #ff2d95;
+
+    /* Options */
+    --option-bg: #1c1030;
+    --option-fg: #8a6aa0;
+
+    /* Pagination */
+    --paginate-bg: #0d0618;
+    --paginate-bg-hover: #1c1030;
+    --paginate-bg-current: #150b25;
+    --paginate-border-radius: 0;
+    --paginate-fg: #8a6aa0;
+    --paginate-fg-disabled: #2d1a42;
+    --paginate-divider: #241535;
+
+    /* Panels */
+    --panel-action-fg: #c4a8d8;
+    --panel-border: 1px solid rgba(178, 77, 255, 0.06);
+    --panel-bg: #150b25;
+    --panel-fg: var(--text-color);
+    --panel-body-border-radius: 0;
+    --panel-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 8px rgba(178, 77, 255, 0.03);
+    --panel-border-radius: 5px;
+    --panel-head-bg: #0d0618;
+    --panel-head-fg: #fff;
+    --panel-head-border-radius: 5px 5px 0 0;
+
+    /* Playlist cards */
+    --playlist-card-bg: #0d0618;
+    --playlist-card-border: none;
+    --playlist-card-border-radius: 6px;
+    --playlist-card-box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    --playlist-card-fg: #c4a8d8;
+    --playlist-card-missing-image-bg: #0a0412;
+    --playlist-card-missing-image-fg: #6a4a80;
+
+    /* Forum posts */
+    --post-bg: #150b25;
+    --post-fg: #e8d5f5;
+    --post-shadow: none;
+    --post-head-fg: var(--text-color);
+    --post-head-bg: none;
+    --post-toolbar-bg: #120820;
+    --post-toolbar-fg: #c4a8d8;
+    --post-toolbar-hover-bg: #1c1030;
+    --post-toolbar-hover-fg: inherit;
+    --post-like-fg: #39ff14;
+    --post-dislike-fg: #ff1744;
+    --post-aside-bg: #120820;
+    --post-aside-fg: #e8d5f5;
+    --post-footer-fg: var(--text-color);
+
+    /* Prize */
+    --prize-bg: #0d0618;
+    --prize-border-radius: 8px;
+    --prize-border: 1px solid rgba(178, 77, 255, 0.1);
+    --prize-box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    --prize-fg: #c4a8d8;
+    --prize-heading-fg: #e8d5f5;
+    --prize-icon-primary-color: #ff2d95;
+    --prize-icon-secondary-color: #b24dff;
+
+    /* Quick search */
+    --quick-search-bg: #120820;
+    --quick-search-fg: #e8d5f5;
+    --quick-search-border: 1px solid #2d1a42;
+    --quick-search-border-radius: 6px;
+    --quick-search-box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    --quick-search-selector-fg: #c4a8d8;
+    --quick-search-selector-hover-bg: #1c1030;
+    --quick-search-selector-hover-fg: #ff2d95;
+    --quick-search-selector-selected-bg: #0d0618;
+    --quick-search-selector-selected-fg: #ff2d95;
+    --quick-search-result-bg: #150b25;
+    --quick-search-result-fg: #e8d5f5;
+    --quick-search-result-hover-bg: #1c1030;
+    --quick-search-result-hover-fg: #fff;
+    --quick-search-result-image-border-radius: 4px;
+    --quick-search-result-year-fg: #6a4a80;
+    --quick-search-result-border: none;
+
+    /* Scrollbar */
+    --scrollbar-color: #b24dff18;
+
+    /* Secondary nav */
+    --secondary-nav-bg: #120820;
+    --secondary-nav-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --secondary-nav-tab-fg: #8a6aa0;
+    --secondary-nav-tab-bg: inherit;
+    --secondary-nav-tab-active-text-decoration: underline #ff2d95 2px;
+    --secondary-nav-tab-hover-fg: #ff2d95;
+    --secondary-nav-tab-hover-bg: transparent;
+    --secondary-nav-tab-hover-text-decoration: underline #ff2d95 2px;
+    --secondary-nav-tab-menu-bg: #0d0618;
+    --secondary-nav-tab-menu-fg: inherit;
+    --secondary-nav-tab-menu-border: 1px solid rgba(178, 77, 255, 0.12);
+    --secondary-nav-tab-menu-border-radius: 6px;
+    --secondary-nav-tab-menu-box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(178, 77, 255, 0.04);
+
+    /* Selects */
+    --select-border: 1px solid #2d1a42;
+    --select-border-active: 2px solid #ff2d95;
+    --select-border-error: 1px solid #ff1744;
+    --select-border-hover: 2px solid #6a4a80;
+    --select-border-radius: 5px;
+    --select-fg: #e8d5f5;
+    --select-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%23c4a8d8' d='M6 8l-1 1l5 5l5-5l-1-1l-4 4l-4-4z'/></svg>");
+    --select-padding: 11px 23px 11px 11px;
+    --select-padding-active: 10px 22px 10px 10px;
+    --select-padding-hover: 10px 22px 10px 10px;
+
+    /* Subforum listings */
+    --subforum-listing-odd-bg: #150b25;
+    --subforum-listing-even-bg: transparent;
+    --subforum-listing-border: none;
+
+    /* Textarea */
+    --textarea-border: 1px solid #2d1a42;
+    --textarea-border-active: 2px solid #ff2d95;
+    --textarea-border-error: 1px solid #ff1744;
+    --textarea-border-hover: 2px solid #6a4a80;
+    --textarea-border-radius: 5px;
+    --textarea-fg: #e8d5f5;
+    --textarea-padding: 12px;
+    --textarea-padding-active: 11px;
+    --textarea-padding-hover: 11px;
+
+    /* Top nav */
+    --top-nav-bg: #0d0618ee;
+    --top-nav-box-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    --top-nav-dropdown-fg: #c4a8d8;
+    --top-nav-dropdown-hover-fg: #ff2d95;
+    --top-nav-dropdown-hover-bg: #1c1030;
+    --top-nav-dropdown-hover-text-decoration: none;
+    --top-nav-dropdown-menu-bg: #120820;
+    --top-nav-dropdown-menu-border: 1px solid rgba(178, 77, 255, 0.12);
+    --top-nav-dropdown-menu-border-radius: 6px;
+    --top-nav-dropdown-menu-box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 10px rgba(178, 77, 255, 0.04);
+    --top-nav-dropdown-menu-item-fg: #c4a8d8;
+    --top-nav-dropdown-menu-item-bg: transparent;
+    --top-nav-dropdown-menu-item-hover-fg: #ff2d95;
+    --top-nav-dropdown-menu-item-hover-bg: #1c1030;
+    --top-nav-dropdown-menu-item-hover-text-decoration: none;
+    --top-nav-dropdown-menu-item-icon-fg: #e8d5f5;
+    --top-nav-dropdown-menu-item-icon-bg: #1c1030;
+    --top-nav-ratio-bar-fg: #e8d5f5;
+    --top-nav-icon-bar-icon-bg: #1c1030;
+    --top-nav-icon-bar-icon-fg: #c4a8d8;
+    --top-nav-icon-bar-icon-border-radius: 50%;
+    --top-nav-icon-bar-icon-hover-bg: #241535;
+    --top-nav-icon-bar-icon-hover-fg: #ff2d95;
+    --top-nav-stats-fg: #8a6aa0;
+    --top-nav-toggle-fg: #8a6aa0;
+
+    /* Torrent cards */
+    --torrent-card-bg: #150b25;
+    --torrent-card-fg: var(--text-color);
+    --torrent-card-border: 1px solid rgba(178, 77, 255, 0.05);
+    --torrent-card-head-bg: #0d0618;
+    --torrent-card-head-fg: #fff;
+    --torrent-card-link-fg: #fff;
+    --torrent-card-genre-fg: #c4a8d8;
+
+    /* Torrent groups */
+    --torrent-group-bg: #0d0618;
+    --torrent-group-header-bg: #1c1030;
+    --torrent-group-text: white;
+    --torrent-group-text-muted: #8a6aa0;
+    --torrent-group-table-stripe-even: rgba(178, 77, 255, 0.015);
+    --torrent-group-table-stripe-odd: rgba(178, 77, 255, 0.035);
+    --torrent-group-hover-brightness-emphasis: 1.15;
+    --torrent-group-chip-border: rgba(178, 77, 255, 0.06);
+
+    /* Torrent rows */
+    --torrent-row-fg: #e8d5f5;
+    --torrent-row-visited-fg: #c4a8d8;
+    --torrent-row-sticky-bg: #1c1030;
+    --torrent-row-format-fg: #e8d5f5;
+    --torrent-row-format-bg: #1c1030;
+    --torrent-row-buttons-fg: currentColor;
+    --torrent-row-seeders-fg: #39ff14;
+    --torrent-row-leechers-fg: #ff2d95;
+    --torrent-row-completed-fg: #b24dff;
+    --torrent-row-thanks-fg: #ff6b35;
+    --torrent-row-comments-fg: #b24dff;
+    --torrent-row-internal-fg: #ffb347;
+    --torrent-row-personal-fg: #b24dff;
+    --torrent-row-stream-optimized-fg: #ff2d95;
+    --torrent-row-featured-fg: #ff6b35;
+    --torrent-row-freeleech-fg: #ffe600;
+    --torrent-row-double-upload-fg: #39ff14;
+    --torrent-row-sticky-fg: #e8d5f5;
+    --torrent-row-highspeed-fg: #ff2d95;
+    --torrent-row-sd-fg: #8a6aa0;
+    --torrent-row-bumped-fg: #ff6b35;
+
+    /* Torrent tags */
+    --torrent-tag-fg: #e8d5f5;
+    --torrent-tag-bg: transparent;
+    --torrent-tag-hover-fg: #fff;
+    --torrent-tag-hover-bg: rgba(255, 45, 149, 0.08);
+
+    /* User stat cards */
+    --user-stat-card-bg: #0d0618;
+    --user-stat-card-fg: #e8d5f5;
+    --user-stat-card-border: 1px solid rgba(178, 77, 255, 0.05);
+    --user-stat-card-border-radius: 5px;
+    --user-stat-card-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* ==========================================================================
+ * TEXT COLOR UTILITIES
+ * ======================================================================== */
+
+.text-bright { color: #f5e8ff; }
+a.text-bright:focus, a.text-bright:hover { color: #fff; }
+.text-blue { color: #ff2d95; }
+.text-purple { color: var(--color-light-purple); }
+a { color: #ff2d95; }
+a:hover { color: #ffb347; }
+.text-green { color: var(--color-light-green); }
+.text-muted { color: #8a6aa0; }
+.text-red { color: var(--color-light-red); }
+.text-orange { color: #ff6b35; }
+.text-pink { color: #ff2d95; }
+.text-danger { color: var(--color-light-red); }
+.text-info { color: #b24dff; }
+.text-success { color: var(--color-light-green); }
+.text-gold { color: #ffe600; }
+
+
+/* ==========================================================================
+ * BADGES
+ * ======================================================================== */
+
+.badge-user {
+    border: 0;
+    box-shadow: none;
+    background-color: #1c1030;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.badge-extra {
+    border: 1px solid rgba(178, 77, 255, 0.12);
+    border-radius: 3px;
+}
+
+.footer__icon { color: #ff2d95; }
+i.torrent-icon { color: #b24dff; }
+
+
+/* ==========================================================================
+ * FULL-PAGE OVERLAYS — the synthwave atmosphere
+ * ======================================================================== */
+
+/* Scanlines — ultra-lightweight CRT effect with slow drift */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.025) 2px,
+        rgba(0, 0, 0, 0.025) 4px
+    );
+    animation: synth-scanline 30s linear infinite;
+}
+
+/* Perspective grid — the classic synthwave floor grid */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(178, 77, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(178, 77, 255, 0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
+
+/* Standalone-mode baseline: when there's no main.scss underneath, html/body
+   get nothing for free — set bg + fg + font here. Cascades safely under
+   External mode (main.scss sets the same and wins via specificity / later load). */
+html {
+    font-size: 10px;
+}
+html, body {
+    background-color: var(--body-bg, #0d0618);
+    color: var(--body-fg, #e8d5f5);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.467;
+}
+
+/* Sunset horizon glow — gradient at the bottom of the viewport */
+body {
+    background-image:
+        radial-gradient(ellipse 120% 35% at 50% 100%, rgba(255, 45, 149, 0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 25% at 50% 100%, rgba(255, 107, 53, 0.06) 0%, transparent 60%);
+    background-attachment: fixed;
+}
+
+
+/* ==========================================================================
+ * BRANDING — neon gradient logo with pink-to-purple sweep
+ * ======================================================================== */
+
+.top-nav__site-logo {
+    background-image: linear-gradient(135deg, #ff2d95 0%, #b24dff 50%, #ff6b35 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    text-shadow: none;
+    filter: drop-shadow(0 0 8px rgba(255, 45, 149, 0.4));
+    letter-spacing: 1.5px;
+}
+
+
+/* ==========================================================================
+ * TOP NAV — neon glow underlines, gradient border
+ * ======================================================================== */
+
+.top-nav {
+    border-bottom: 1px solid rgba(255, 45, 149, 0.12);
+    position: relative;
+}
+
+/* Gradient glow line under nav */
+.top-nav::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 45, 149, 0.35), rgba(178, 77, 255, 0.25), rgba(255, 45, 149, 0.35), transparent);
+}
+
+/* Nav icon hover glow */
+.top-nav__icon-bar__icon {
+    transition: box-shadow 0.3s ease;
+}
+.top-nav__icon-bar__icon:hover {
+    box-shadow: 0 0 12px rgba(255, 45, 149, 0.35);
+}
+
+/* Notification badge pulse */
+.top-nav__icon-bar__icon .badge,
+.top-nav .badge {
+    animation: synth-pulse 2s ease-in-out infinite;
+    border: 1px solid rgba(255, 45, 149, 0.3);
+}
+
+
+/* ==========================================================================
+ * PANELS — glassmorphism + rotating neon border on hover
+ * ======================================================================== */
+
+.panel {
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(6px) saturate(1.2);
+}
+
+/* Rotating neon border — hover only for performance */
+.panel::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    background: conic-gradient(
+        from var(--synth-angle, 0deg),
+        #ff2d95,
+        #b24dff,
+        #ff6b35,
+        #ff2d95
+    );
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    animation: synth-rotate 4s linear infinite;
+}
+.panel:hover::after {
+    opacity: 0.1;
+}
+
+/* Panel heading left accent bar — pink-to-purple gradient */
+.panel__heading {
+    border-bottom: 1px solid rgba(178, 77, 255, 0.1);
+    position: relative;
+}
+.panel__heading::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: linear-gradient(180deg, #ff2d95, #b24dff);
+    border-radius: 0 2px 2px 0;
+}
+
+
+/* ==========================================================================
+ * DATA TABLES — accent lines, header treatment
+ * ======================================================================== */
+
+.data-table tr:hover td:first-child {
+    box-shadow: inset 3px 0 0 #ff2d95;
+}
+
+.data-table thead th {
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.88em;
+}
+.data-table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255, 45, 149, 0.3), transparent);
+}
+
+
+/* ==========================================================================
+ * TORRENT CARDS — 3D hover lift + holographic shimmer
+ * ======================================================================== */
+
+.torrent-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.torrent-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 15px rgba(178, 77, 255, 0.08);
+}
+
+/* Holographic shimmer stripe sweeps across on hover */
+.torrent-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 40%,
+        rgba(255, 45, 149, 0.03) 45%,
+        rgba(178, 77, 255, 0.05) 50%,
+        rgba(255, 45, 149, 0.03) 55%,
+        transparent 60%
+    );
+    transition: left 0.6s ease;
+    pointer-events: none;
+}
+.torrent-card:hover::after {
+    left: 150%;
+}
+
+
+/* ==========================================================================
+ * FEATURED PANE — maximum neon treatment + holographic sweep
+ * ======================================================================== */
+
+.featured-pane {
+    border: 1px solid rgba(178, 77, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+    animation: synth-breathe 4s ease-in-out infinite;
+}
+.featured-pane::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--holo-pos, -100%);
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(255, 45, 149, 0.02) 35%,
+        rgba(178, 77, 255, 0.04) 50%,
+        rgba(255, 107, 53, 0.02) 65%,
+        transparent 80%
+    );
+    animation: synth-holo 6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+/* ==========================================================================
+ * BUTTONS — neon glow + sweep shimmer
+ * ======================================================================== */
+
+.form__button--filled,
+.button--filled {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #ff2d95, #b24dff) !important;
+}
+.form__button--filled::before,
+.button--filled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%);
+    transition: left 0.5s ease;
+}
+.form__button--filled:hover,
+.button--filled:hover {
+    box-shadow: 0 0 20px rgba(255, 45, 149, 0.35), 0 0 40px rgba(255, 45, 149, 0.1);
+}
+.form__button--filled:hover::before,
+.button--filled:hover::before {
+    left: 100%;
+}
+
+/* Outlined buttons — glow on hover */
+.form__button--outlined:hover,
+.button--outlined:hover {
+    box-shadow: 0 0 12px rgba(255, 45, 149, 0.3);
+    border-color: #b24dff;
+    color: #b24dff;
+}
+
+
+/* ==========================================================================
+ * ARTICLE CARDS — hover lift
+ * ======================================================================== */
+
+.article-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.article-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 10px rgba(178, 77, 255, 0.06);
+}
+
+
+/* ==========================================================================
+ * SWEETALERT2 — styled modals
+ * ======================================================================== */
+
+.swal2-popup {
+    background: #1c1030 !important;
+    color: #e8d5f5 !important;
+    border: 1px solid rgba(178, 77, 255, 0.15) !important;
+    box-shadow: 0 0 30px rgba(255, 45, 149, 0.06), 0 25px 50px rgba(0, 0, 0, 0.5) !important;
+}
+.swal2-title { color: #fff !important; }
+.swal2-confirm { background: #ff2d95 !important; box-shadow: 0 0 12px rgba(255, 45, 149, 0.3) !important; }
+
+
+/* ==========================================================================
+ * CHAT FRAME — neon accents
+ * ======================================================================== */
+
+#frame {
+    background: #150b25;
+    border: 1px solid rgba(178, 77, 255, 0.08);
+    position: relative;
+}
+#frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff2d95, #b24dff, #ff2d95, transparent);
+    z-index: 5;
+}
+#frame .content .messages ul li {
+    border-bottom: 1px dashed rgba(45, 26, 66, 0.5);
+    transition: background 0.2s ease;
+}
+#frame .content .messages ul li:hover {
+    background: rgba(178, 77, 255, 0.02);
+}
+#frame .content .messages ul li > img {
+    border: 2px solid #b24dff;
+    box-shadow: 0 0 8px rgba(178, 77, 255, 0.25);
+}
+#frame .content .message-input .wrap input {
+    color: #e8d5f5;
+    background: #120820;
+    border: 1px solid rgba(178, 77, 255, 0.1);
+    transition: all 0.3s ease;
+}
+#frame .content .message-input .wrap input:focus {
+    outline: none;
+    border-color: #ff2d95;
+    box-shadow: 0 0 10px rgba(255, 45, 149, 0.2);
+}
+#frame .content .message-input .wrap button {
+    background: #ff2d95;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+#frame .content .message-input .wrap button:hover {
+    background: #e62585;
+    box-shadow: 0 0 12px rgba(255, 45, 149, 0.4);
+}
+
+/* Chat message bubbles */
+.sent > h4 {
+    display: block !important;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background-color: var(--message-bubble-bg) !important;
+    padding: 4px 12px 0 8px;
+    margin: 4px 12px 0 48px;
+}
+.sent > div {
+    display: block !important;
+    border-bottom-right-radius: 10px;
+    background-color: var(--message-bubble-bg) !important;
+    padding: 0 12px 4px 8px !important;
+    margin: 0 12px 4px 48px !important;
+}
+.sent > .system { border-bottom-left-radius: 10px; }
+.sent > div:not(.system):before {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 38px;
+    width: 0;
+    border-right: 10px solid var(--message-bubble-bg) !important;
+    border-top: 10px solid transparent;
+}
+#frame .content .messages ul li.sent {
+    border: 0;
+    display: table;
+    max-width: 85%;
+    width: auto;
+}
+#frame .content .messages ul li.sent img.chat-user-image {
+    height: 40px;
+    width: 40px;
+    border-radius: 4px;
+    border: 1px solid rgba(178, 77, 255, 0.2);
+}
+
+
+/* ==========================================================================
+ * SCROLLBAR — synthwave gradient thumb
+ * ======================================================================== */
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0d0618; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #2d1a42, #1c1030);
+    border-radius: 4px;
+    border: 1px solid rgba(178, 77, 255, 0.08);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff2d95, #b24dff);
+    box-shadow: 0 0 8px rgba(255, 45, 149, 0.4);
+}
+
+
+/* ==========================================================================
+ * INPUTS — pink focus glow
+ * ======================================================================== */
+
+input:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 8px rgba(255, 45, 149, 0.2), 0 0 2px rgba(255, 45, 149, 0.1);
+}
+
+
+/* ==========================================================================
+ * VIRTUAL SELECT — styled dropdown
+ * ======================================================================== */
+
+.vscomp-toggle-button {
+    background-color: #150b25;
+    border-color: #2d1a42;
+    transition: border-color 0.3s ease;
+}
+.vscomp-toggle-button:hover { border-color: rgba(255, 45, 149, 0.3); }
+.vscomp-dropbox {
+    background-color: #120820;
+    border-color: rgba(178, 77, 255, 0.12);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+.vscomp-option { transition: background-color 0.2s ease; }
+.vscomp-option:hover, .vscomp-option.focused { background-color: #1c1030; }
+.vscomp-option.selected { background-color: rgba(255, 45, 149, 0.1); border-left: 2px solid #ff2d95; }
+.vscomp-search-input { background-color: #0d0618; color: #e8d5f5; border-color: #2d1a42; }
+
+
+/* ==========================================================================
+ * USER STAT CARDS — hover lift + top accent
+ * ======================================================================== */
+
+.user-stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.user-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3), 0 0 8px rgba(178, 77, 255, 0.08);
+}
+.user-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff2d95, #b24dff);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.user-stat-card:hover::before { opacity: 1; }
+
+
+/* ==========================================================================
+ * MEDIAHUB & PLAYLIST CARDS — hover effects
+ * ======================================================================== */
+
+.mediahub-card, .playlist-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.mediahub-card:hover, .playlist-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 10px rgba(178, 77, 255, 0.05);
+}
+
+.achievement {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.achievement:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 15px rgba(178, 77, 255, 0.1);
+}
+
+
+/* ==========================================================================
+ * LINKS — neon underline animation (content areas only)
+ * ======================================================================== */
+
+.panel__body a:not([class]),
+.post__body a:not([class]),
+.bbcode-rendered a:not([class]) {
+    position: relative;
+    text-decoration: none;
+}
+.panel__body a:not([class])::after,
+.post__body a:not([class])::after,
+.bbcode-rendered a:not([class])::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #b24dff;
+    box-shadow: 0 0 4px rgba(178, 77, 255, 0.4);
+    transition: width 0.3s ease;
+}
+.panel__body a:not([class]):hover::after,
+.post__body a:not([class]):hover::after,
+.bbcode-rendered a:not([class]):hover::after {
+    width: 100%;
+}
+
+
+/* ==========================================================================
+ * MISC — pagination, breadcrumbs, HRs, meter, seeders/leechers glow
+ * ======================================================================== */
+
+.pagination__link { transition: all 0.2s ease; }
+.pagination__link:hover { box-shadow: 0 0 8px rgba(255, 45, 149, 0.2); }
+
+.breadcrumb a:hover { text-shadow: 0 0 6px rgba(255, 45, 149, 0.2); }
+
+.secondary-nav__tab:hover { text-shadow: 0 0 6px rgba(255, 45, 149, 0.2); }
+
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 45, 149, 0.25), rgba(178, 77, 255, 0.2), rgba(255, 45, 149, 0.25), transparent);
+}
+
+.meter__bar { box-shadow: 0 0 6px rgba(255, 45, 149, 0.2); }
+
+.torrent-row__seeders { text-shadow: 0 0 4px rgba(57, 255, 20, 0.2); }
+.torrent-row__leechers { text-shadow: 0 0 4px rgba(255, 45, 149, 0.2); }
+
+/* Footer neon top border */
+footer, .footer { position: relative; }
+footer::before, .footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 45, 149, 0.3), rgba(178, 77, 255, 0.2), rgba(255, 107, 53, 0.2), transparent);
+}
+
+.badge-user:hover { box-shadow: 0 0 8px rgba(178, 77, 255, 0.2); }
+.badge-extra:hover { border-color: #ff2d95; box-shadow: 0 0 8px rgba(255, 45, 149, 0.2); }
+
+.donation-card:hover { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(178, 77, 255, 0.06); }
+
+.post { transition: border-color 0.3s ease; }
+.post:hover { border-color: rgba(178, 77, 255, 0.08); }
+
+
+/* ==========================================================================
+ * TEXT SELECTION
+ * ======================================================================== */
+
+::selection { background: rgba(255, 45, 149, 0.3); color: #fff; }
+::-moz-selection { background: rgba(255, 45, 149, 0.3); color: #fff; }
+
+
+/* ==========================================================================
+ * FOCUS RINGS — keyboard accessibility
+ * ======================================================================== */
+
+:focus-visible {
+    outline: 2px solid rgba(255, 45, 149, 0.5);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+ * HEADINGS — subtle spacing for that retro feel
+ * ======================================================================== */
+
+h1, h2, h3 { letter-spacing: 0.5px; }
+
+
+/* ==========================================================================
+ * KEY-VALUE TABLES — left accent on odd rows
+ * ======================================================================== */
+
+.key-value__row:nth-child(odd) { position: relative; }
+.key-value__row:nth-child(odd)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255, 45, 149, 0.15);
+}
+
+
+/* ==========================================================================
+ * QUICK SEARCH — neon top accent
+ * ======================================================================== */
+
+.quick-search__results {
+    position: relative;
+    border: 1px solid rgba(178, 77, 255, 0.1);
+}
+.quick-search__results::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff2d95, transparent);
+}
+
+
+/* ==========================================================================
+ * REDUCED MOTION — respect accessibility preferences
+ * ======================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    body::before { animation: none !important; }
+}

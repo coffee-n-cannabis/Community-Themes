@@ -1,0 +1,1254 @@
+/*
+ * ============================================================================
+ * MATRIX — HHD Custom Theme
+ * ============================================================================
+ *
+ * Terminal phosphor green on black. The digital rain aesthetic.
+ * Zero border-radius. Sharp edges. Green glow. CRT scanlines.
+ * Monospace-feel headers. Everything is green except danger.
+ *
+ * Works on any UNIT3D v8+ site — paste the URL into:
+ *   General Settings > External CSS Stylesheet (stacks on top of theme)
+ *   OR Standalone CSS Stylesheet (replaces theme entirely)
+ *
+ * Palette:
+ *   Backgrounds:  #050505 → #0a0a0a → #0e0e0e → #131313 (pure black layers)
+ *   Primary:      #00ff41  (phosphor green — links, buttons, headers)
+ *   Secondary:    #00cc33  (darker green — visited, info)
+ *   Dim:          #338844  (muted green — inactive UI)
+ *   Text:         #b0ffb0  (soft green-white)
+ *   Muted:        #557755  (dark green)
+ *   Danger only:  #ff0033  (red alarm — the ONLY non-green)
+ *
+ * Compatibility: UNIT3D v8.x / v9.x (CSS custom properties + BEM classes)
+ * Performance:   Overlays are pointer-events:none, GPU-composited
+ * Accessibility: Respects prefers-reduced-motion
+ */
+
+
+/* ==========================================================================
+ * @property — CSS Houdini animated custom properties
+ * Chrome/Edge 85+, Safari 15.4+, Firefox 128+
+ * ======================================================================== */
+
+@property --matrix-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+
+/* ==========================================================================
+ * KEYFRAMES
+ * ======================================================================== */
+
+/* Rotating angle for conic-gradient borders (green-only spectrum) */
+@keyframes matrix-rotate {
+    to { --matrix-angle: 360deg; }
+}
+
+/* CRT scanline drift */
+@keyframes matrix-scanline {
+    0%   { background-position: 0 0; }
+    100% { background-position: 0 100vh; }
+}
+
+/* Cursor blink */
+@keyframes matrix-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+/* Phosphor pulse on notification badges */
+@keyframes matrix-pulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(0, 255, 65, 0.4); }
+    50%      { box-shadow: 0 0 10px rgba(0, 255, 65, 0.7), 0 0 20px rgba(0, 255, 65, 0.25); }
+}
+
+/* Subtle green breathe for featured content */
+@keyframes matrix-breathe {
+    0%, 100% { box-shadow: 0 0 8px rgba(0, 255, 65, 0.04), inset 0 0 15px rgba(0, 255, 65, 0.01); }
+    50%      { box-shadow: 0 0 16px rgba(0, 255, 65, 0.08), inset 0 0 25px rgba(0, 255, 65, 0.02); }
+}
+
+/* Digital rain column — cascading green characters */
+@keyframes matrix-rain {
+    0%   { background-position: 0 -200vh; }
+    100% { background-position: 0 200vh; }
+}
+
+/* Neon text flicker */
+@keyframes matrix-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.7; }
+}
+
+
+/* ==========================================================================
+ * CSS CUSTOM PROPERTIES — the full UNIT3D variable set
+ * ======================================================================== */
+
+:root {
+    --text-color: #b0ffb0;
+
+    /* Semantic colors — all shifted to green spectrum */
+    --color-dark-magenta: hsl(140, 40%, 14%);
+    --color-dark-green: hsl(140, 60%, 16%);
+    --color-dark-blue: hsl(150, 50%, 12%);
+    --color-dark-red: hsl(350, 80%, 22%);
+    --color-red: hsl(350, 100%, 50%);
+    --color-light-red: hsl(350, 100%, 60%);
+    --color-green: hsl(135, 100%, 50%);
+    --color-light-green: hsl(135, 100%, 60%);
+    --color-yellow: hsl(135, 80%, 50%);
+    --color-light-yellow: hsl(135, 80%, 60%);
+    --color-magenta: hsl(155, 100%, 40%);
+    --color-light-magenta: hsl(155, 100%, 50%);
+    --color-dark-purple: hsl(145, 50%, 15%);
+    --color-purple: hsl(150, 80%, 40%);
+    --color-light-purple: hsl(150, 80%, 50%);
+    --color-blue: hsl(140, 100%, 45%);
+    --color-light-blue: hsl(140, 100%, 55%);
+    --color-bright-white: hsl(120, 30%, 95%);
+    --color-light-orange: hsl(130, 80%, 50%);
+
+    /* Message bubbles */
+    --message-bubble-bg: #0e0e0e;
+    --message-bubble-fg: var(--text-color);
+    --message-bubble-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 4px rgba(0, 255, 65, 0.03);
+    --message-bubble-border-radius: 0;
+    --message-bubble-border: 1px solid rgba(0, 255, 65, 0.08);
+    --message-bubble-avatar-border-radius: 0;
+
+    /* Achievements */
+    --achievement-fg: inherit;
+    --achievement-bg: #0a0a0a;
+    --achievement-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    --achievement-progress-bg: #00ff41;
+
+    /* Alerts */
+    --alert-bg: #080808;
+    --alert-fg: #77aa77;
+    --alert-gap-color: #1a2a1a;
+    --alert-gap-width: 1px;
+
+    /* Article cards */
+    --article-card-bg: #0a0a0a;
+    --article-card-fg: #88aa88;
+    --article-card-head-fg: #88aa88;
+    --article-card-time-fg: #557755;
+    --article-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+    /* BBCode input */
+    --bbcode-input-header-bg: #0a0a0a;
+    --bbcode-input-body-bg: #0a0a0a;
+    --bbcode-input-border: 1px solid #1a2a1a;
+    --bbcode-input-border-radius: 0;
+
+    /* BBCode rendered */
+    --bbcode-rendered-fg-default: #b0ffb0;
+    --bbcode-rendered-fg-muted: #557755;
+    --bbcode-rendered-fg-subtle: #334433;
+    --bbcode-rendered-canvas-default: transparent;
+    --bbcode-rendered-canvas-subtle: #0a120a;
+    --bbcode-rendered-border-default: #1a2a1a;
+    --bbcode-rendered-border-muted: #223322;
+    --bbcode-rendered-neutral-muted: #22332266;
+    --bbcode-rendered-accent-fg: #00ff41;
+    --bbcode-rendered-accent-emphasis: #00cc33;
+    --bbcode-rendered-attention-subtle: #33ff77;
+    --bbcode-rendered-danger-fg: #ff0033cc;
+    --bbcode-rendered-quote-bg: #1a2a1a22;
+    --bbcode-rendered-quote-border: #00ff41;
+
+    /* Body */
+    --body-bg: #050505;
+    --body-fg: var(--text-color);
+
+    /* Breadcrumbs */
+    --breadcrumb-fg: #446644;
+    --breadcrumb-active-fg: #88aa88;
+    --breadcrumb-hover-fg: #00ff41;
+    --breadcrumb-inactive-text-decoration: none;
+
+    /* Buttons — filled (black on green — like a terminal button) */
+    --button-filled-bg: #00cc33;
+    --button-filled-border: none;
+    --button-filled-border-radius: 0;
+    --button-filled-fg: #000;
+
+    /* Buttons — outlined */
+    --button-outlined-bg: transparent;
+    --button-outlined-border: 1px solid #00ff41;
+    --button-outlined-border-radius: 0;
+    --button-outlined-fg: #00ff41;
+
+    /* Buttons — text */
+    --button-text-bg: transparent;
+    --button-text-border: none;
+    --button-text-border-radius: 0;
+    --button-text-fg: currentColor;
+
+    /* Chatbox */
+    --chatbox-message-bg: #0a0a0a;
+    --chatbox-button-fg: #446644;
+    --chatbox-button-hover-fg: #00ff41;
+    --chatbox-users-bg: #080808;
+    --chatbox-tab-delete-fg: #ff0033;
+    --chatbox-tab-delete-bg: #141414;
+
+    /* Collectible cards */
+    --collectible-card-bg: #0a0a0a;
+    --collectible-card-border: 1px solid rgba(0, 255, 65, 0.06);
+    --collectible-card-border-radius: 0;
+    --collectible-card-fg: #b0ffb0;
+    --collectible-card-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --collectible-card-hover-fg: #00ff41;
+    --collectible-card-banner-available: #00cc33;
+    --collectible-card-banner-last: #ff0033;
+
+    /* Compact search */
+    --compact-search-bg: #0a0a0a;
+    --compact-search-box-shadow: none;
+    --compact-search-border-radius: 0;
+    --compact-search-fg: var(--text-color);
+    --compact-search-padding: 5px;
+
+    /* Comparison */
+    --comparison-divider-fg: #00ff41;
+    --comparison-button-fg: #00ff41;
+
+    /* Data tables */
+    --data-table-border-radius: 0;
+    --data-table-fg: var(--text-color);
+    --data-table-th-bg: #050505;
+    --data-table-thead-border: 1px solid #1a2a1a;
+    --data-table-tr-border: 1px solid #0f1a0f;
+    --data-table-tr-even-bg: #080808;
+    --data-table-tr-hover-bg: #0e1a0e;
+    --data-table-tr-odd-bg: #060606;
+    --data-table-tfoot-border: 1px solid #1a2a1a;
+
+    /* Dialogs / Modals */
+    --dialog-bg: #0a0a0a;
+    --dialog-border: 1px solid rgba(0, 255, 65, 0.1);
+    --dialog-border-radius: 0;
+    --dialog-box-shadow: 0 0 25px rgba(0, 255, 65, 0.04), 0 20px 40px rgba(0, 0, 0, 0.5);
+    --dialog-fg: var(--text-color);
+    --dialog-head-bg: #050505;
+    --dialog-head-fg: #00ff41;
+
+    /* Donations */
+    --donation-border-color: #1a2a1a;
+    --donation-box-shadow-color: rgba(0, 255, 65, 0.04);
+    --donation-primary-text-color: #b0ffb0;
+    --donation-secondary-text-color: #88aa88;
+    --donation-background-color: #050505;
+    --donation-price-days-color: #00ff41;
+    --donation-chart-daily-bg: rgba(0, 255, 65, 0.2);
+    --donation-chart-daily-border: rgba(0, 255, 65, 1);
+    --donation-chart-monthly-bg: rgba(0, 204, 51, 0.2);
+    --donation-chart-monthly-border: rgba(0, 204, 51, 1);
+
+    /* Fieldsets */
+    --fieldset-bg: inherit;
+    --fieldset-fg: #88aa88;
+    --fieldset-border-radius: 0;
+    --fieldset-border: 1px solid #1a2a1a;
+
+    /* Footer */
+    --footer-bg: #030303cc;
+    --footer-hr-fg: #0f1a0f;
+
+    /* Icon buttons */
+    --icon-button-bg: transparent;
+    --icon-button-border: none;
+    --icon-button-border-radius: 0;
+    --icon-button-fg: currentColor;
+    --icon-button-filled-bg: #00cc33;
+    --icon-button-filled-fg: #000;
+    --icon-button-filled-border: none;
+
+    /* Input text */
+    --input-text-border: 1px solid #1a2a1a;
+    --input-text-border-active: 2px solid #00ff41;
+    --input-text-border-error: 1px solid #ff0033;
+    --input-text-border-hover: 2px solid #338844;
+    --input-text-border-radius: 0;
+    --input-text-fg: #b0ffb0;
+    --input-text-padding: 12px;
+    --input-text-padding-active: 11px;
+    --input-text-padding-hover: 11px;
+
+    /* Key-value tables */
+    --key-value-border-radius: 0;
+    --key-value-even-bg: #080808;
+    --key-value-fg: var(--text-color);
+    --key-value-odd-bg: #060606;
+    --key-value-padding: 10px;
+
+    /* Labels */
+    --label-bg: #1a2a1a;
+    --label-fg: #557755;
+    --label-fg-active: #00ff41;
+    --label-fg-error: #ff0033;
+    --label-fg-hover: #88aa88;
+
+    /* Legends */
+    --legend-fg: #446644;
+    --legend-bg: transparent;
+    --legend-border: none;
+    --legend-border-radius: 0;
+
+    /* Mediahub cards */
+    --mediahub-card-bg: #050505;
+    --mediahub-card-fg: #b0ffb0;
+    --mediahub-card-hover-fg: #00ff41;
+    --mediahub-card-border: 1px solid rgba(0, 255, 65, 0.04);
+    --mediahub-card-border-radius: 0;
+    --mediahub-card-box-shadow: none;
+
+    /* Meta (torrent detail page) */
+    --meta-backdrop-filter: brightness(10%) blur(60px) saturate(2);
+    --meta-dropdown-backdrop-filter: brightness(1.5) blur(10px);
+    --meta-dropdown-bg: rgba(10, 10, 10, 0.95);
+    --meta-dropdown-backdrop-filter-hover: brightness(1.5) blur(10px);
+    --meta-dropdown-hover-bg: rgba(0, 255, 65, 0.04);
+    --meta-dropdown-fg: #88aa88;
+    --meta-dropdown-hover-fg: #00ff41;
+    --meta-description-fg: #b0ffb0;
+    --meta-id-tag-fg: #b0ffb0;
+    --meta-id-tag-bg: transparent;
+    --meta-id-tag-hover-fg: #00ff41;
+    --meta-id-tag-hover-bg: rgba(0, 255, 65, 0.04);
+    --meta-chips-heading-fg: #557755;
+    --meta-chip-icon-fg: #000;
+    --meta-chip-icon-hover-bg: #00ff41;
+    --meta-chip-icon-bg: #88aa88;
+    --meta-chip-name-fg: #b0ffb0;
+    --meta-chip-value-fg: #557755;
+    --meta-chip-value-hover-fg: #b0ffb0;
+    --meta-chip-backdrop-filter-hover: brightness(1.5) blur(10px);
+    --meta-chip-hover-bg: rgba(0, 255, 65, 0.03);
+    --meta-popup-bg: #050505;
+    --meta-popup-fg: #557755;
+
+    /* Meter */
+    --meter-fg: #1a2a1a;
+    --meter-bg: #00ff41;
+
+    /* Notifications */
+    --notification-read: transparent;
+    --notification-unread: #00ff41;
+
+    /* Options */
+    --option-bg: #0e1a0e;
+    --option-fg: #557755;
+
+    /* Pagination */
+    --paginate-bg: #050505;
+    --paginate-bg-hover: #0e1a0e;
+    --paginate-bg-current: #0a0a0a;
+    --paginate-border-radius: 0;
+    --paginate-fg: #557755;
+    --paginate-fg-disabled: #1a2a1a;
+    --paginate-divider: #0f1a0f;
+
+    /* Panels */
+    --panel-action-fg: #88aa88;
+    --panel-border: 1px solid rgba(0, 255, 65, 0.05);
+    --panel-bg: #0a0a0a;
+    --panel-fg: var(--text-color);
+    --panel-body-border-radius: 0;
+    --panel-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --panel-border-radius: 0;
+    --panel-head-bg: #050505;
+    --panel-head-fg: #00ff41;
+    --panel-head-border-radius: 0;
+
+    /* Playlist cards */
+    --playlist-card-bg: #050505;
+    --playlist-card-border: 1px solid rgba(0, 255, 65, 0.04);
+    --playlist-card-border-radius: 0;
+    --playlist-card-box-shadow: none;
+    --playlist-card-fg: #88aa88;
+    --playlist-card-missing-image-bg: #030303;
+    --playlist-card-missing-image-fg: #446644;
+
+    /* Forum posts */
+    --post-bg: #0a0a0a;
+    --post-fg: #b0ffb0;
+    --post-shadow: none;
+    --post-head-fg: var(--text-color);
+    --post-head-bg: none;
+    --post-toolbar-bg: #060606;
+    --post-toolbar-fg: #88aa88;
+    --post-toolbar-hover-bg: #0e1a0e;
+    --post-toolbar-hover-fg: inherit;
+    --post-like-fg: #00ff41;
+    --post-dislike-fg: #ff0033;
+    --post-aside-bg: #060606;
+    --post-aside-fg: #b0ffb0;
+    --post-footer-fg: var(--text-color);
+
+    /* Prize */
+    --prize-bg: #050505;
+    --prize-border-radius: 0;
+    --prize-border: 1px solid rgba(0, 255, 65, 0.06);
+    --prize-box-shadow: none;
+    --prize-fg: #88aa88;
+    --prize-heading-fg: #b0ffb0;
+    --prize-icon-primary-color: #00ff41;
+    --prize-icon-secondary-color: #00cc33;
+
+    /* Quick search */
+    --quick-search-bg: #080808;
+    --quick-search-fg: #b0ffb0;
+    --quick-search-border: 1px solid #1a2a1a;
+    --quick-search-border-radius: 0;
+    --quick-search-box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    --quick-search-selector-fg: #88aa88;
+    --quick-search-selector-hover-bg: #0e1a0e;
+    --quick-search-selector-hover-fg: #00ff41;
+    --quick-search-selector-selected-bg: #050505;
+    --quick-search-selector-selected-fg: #00ff41;
+    --quick-search-result-bg: #0a0a0a;
+    --quick-search-result-fg: #b0ffb0;
+    --quick-search-result-hover-bg: #0e1a0e;
+    --quick-search-result-hover-fg: #00ff41;
+    --quick-search-result-image-border-radius: 0;
+    --quick-search-result-year-fg: #446644;
+    --quick-search-result-border: none;
+
+    /* Scrollbar */
+    --scrollbar-color: #00ff4110;
+
+    /* Secondary nav */
+    --secondary-nav-bg: #060606;
+    --secondary-nav-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    --secondary-nav-tab-fg: #557755;
+    --secondary-nav-tab-bg: inherit;
+    --secondary-nav-tab-active-text-decoration: underline #00ff41 2px;
+    --secondary-nav-tab-hover-fg: #00ff41;
+    --secondary-nav-tab-hover-bg: transparent;
+    --secondary-nav-tab-hover-text-decoration: underline #00ff41 2px;
+    --secondary-nav-tab-menu-bg: #050505;
+    --secondary-nav-tab-menu-fg: inherit;
+    --secondary-nav-tab-menu-border: 1px solid rgba(0, 255, 65, 0.08);
+    --secondary-nav-tab-menu-border-radius: 0;
+    --secondary-nav-tab-menu-box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+
+    /* Selects */
+    --select-border: 1px solid #1a2a1a;
+    --select-border-active: 2px solid #00ff41;
+    --select-border-error: 1px solid #ff0033;
+    --select-border-hover: 2px solid #338844;
+    --select-border-radius: 0;
+    --select-fg: #b0ffb0;
+    --select-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%2388aa88' d='M6 8l-1 1l5 5l5-5l-1-1l-4 4l-4-4z'/></svg>");
+    --select-padding: 11px 23px 11px 11px;
+    --select-padding-active: 10px 22px 10px 10px;
+    --select-padding-hover: 10px 22px 10px 10px;
+
+    /* Subforum listings */
+    --subforum-listing-odd-bg: #080808;
+    --subforum-listing-even-bg: transparent;
+    --subforum-listing-border: none;
+
+    /* Textarea */
+    --textarea-border: 1px solid #1a2a1a;
+    --textarea-border-active: 2px solid #00ff41;
+    --textarea-border-error: 1px solid #ff0033;
+    --textarea-border-hover: 2px solid #338844;
+    --textarea-border-radius: 0;
+    --textarea-fg: #b0ffb0;
+    --textarea-padding: 12px;
+    --textarea-padding-active: 11px;
+    --textarea-padding-hover: 11px;
+
+    /* Top nav */
+    --top-nav-bg: #050505ee;
+    --top-nav-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    --top-nav-dropdown-fg: #88aa88;
+    --top-nav-dropdown-hover-fg: #00ff41;
+    --top-nav-dropdown-hover-bg: #0e1a0e;
+    --top-nav-dropdown-hover-text-decoration: none;
+    --top-nav-dropdown-menu-bg: #060606;
+    --top-nav-dropdown-menu-border: 1px solid rgba(0, 255, 65, 0.08);
+    --top-nav-dropdown-menu-border-radius: 0;
+    --top-nav-dropdown-menu-box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    --top-nav-dropdown-menu-item-fg: #88aa88;
+    --top-nav-dropdown-menu-item-bg: transparent;
+    --top-nav-dropdown-menu-item-hover-fg: #00ff41;
+    --top-nav-dropdown-menu-item-hover-bg: #0e1a0e;
+    --top-nav-dropdown-menu-item-hover-text-decoration: none;
+    --top-nav-dropdown-menu-item-icon-fg: #b0ffb0;
+    --top-nav-dropdown-menu-item-icon-bg: #0e1a0e;
+    --top-nav-ratio-bar-fg: #b0ffb0;
+    --top-nav-icon-bar-icon-bg: #0e1a0e;
+    --top-nav-icon-bar-icon-fg: #88aa88;
+    --top-nav-icon-bar-icon-border-radius: 0;
+    --top-nav-icon-bar-icon-hover-bg: #1a2a1a;
+    --top-nav-icon-bar-icon-hover-fg: #00ff41;
+    --top-nav-stats-fg: #557755;
+    --top-nav-toggle-fg: #557755;
+
+    /* Torrent cards */
+    --torrent-card-bg: #0a0a0a;
+    --torrent-card-fg: var(--text-color);
+    --torrent-card-border: 1px solid rgba(0, 255, 65, 0.03);
+    --torrent-card-head-bg: #050505;
+    --torrent-card-head-fg: #00ff41;
+    --torrent-card-link-fg: #00ff41;
+    --torrent-card-genre-fg: #88aa88;
+
+    /* Torrent groups */
+    --torrent-group-bg: #050505;
+    --torrent-group-header-bg: #0e1a0e;
+    --torrent-group-text: #00ff41;
+    --torrent-group-text-muted: #557755;
+    --torrent-group-table-stripe-even: rgba(0, 255, 65, 0.01);
+    --torrent-group-table-stripe-odd: rgba(0, 255, 65, 0.025);
+    --torrent-group-hover-brightness-emphasis: 1.2;
+    --torrent-group-chip-border: rgba(0, 255, 65, 0.04);
+
+    /* Torrent rows */
+    --torrent-row-fg: #b0ffb0;
+    --torrent-row-visited-fg: #88aa88;
+    --torrent-row-sticky-bg: #0e1a0e;
+    --torrent-row-format-fg: #b0ffb0;
+    --torrent-row-format-bg: #0e1a0e;
+    --torrent-row-buttons-fg: currentColor;
+    --torrent-row-seeders-fg: #00ff41;
+    --torrent-row-leechers-fg: #ff0033;
+    --torrent-row-completed-fg: #33ff77;
+    --torrent-row-thanks-fg: #00cc33;
+    --torrent-row-comments-fg: #338844;
+    --torrent-row-internal-fg: #66dd66;
+    --torrent-row-personal-fg: #00cc33;
+    --torrent-row-stream-optimized-fg: #33ff77;
+    --torrent-row-featured-fg: #00ff41;
+    --torrent-row-freeleech-fg: #00ff41;
+    --torrent-row-double-upload-fg: #33ff77;
+    --torrent-row-sticky-fg: #b0ffb0;
+    --torrent-row-highspeed-fg: #00ff41;
+    --torrent-row-sd-fg: #446644;
+    --torrent-row-bumped-fg: #66dd66;
+
+    /* Torrent tags */
+    --torrent-tag-fg: #b0ffb0;
+    --torrent-tag-bg: transparent;
+    --torrent-tag-hover-fg: #00ff41;
+    --torrent-tag-hover-bg: rgba(0, 255, 65, 0.04);
+
+    /* User stat cards */
+    --user-stat-card-bg: #050505;
+    --user-stat-card-fg: #b0ffb0;
+    --user-stat-card-border: 1px solid rgba(0, 255, 65, 0.03);
+    --user-stat-card-border-radius: 0;
+    --user-stat-card-box-shadow: none;
+}
+
+
+/* ==========================================================================
+ * TEXT COLOR UTILITIES
+ * ======================================================================== */
+
+.text-bright { color: #d0ffd0; }
+a.text-bright:focus, a.text-bright:hover { color: #00ff41; }
+.text-blue { color: #00ff41; }
+.text-purple { color: #00cc33; }
+a { color: #00ff41; }
+a:hover { color: #33ff77; text-shadow: 0 0 4px rgba(0, 255, 65, 0.3); }
+.text-green { color: #00ff41; }
+.text-muted { color: #557755; }
+.text-red { color: #ff0033; }
+.text-orange { color: #66dd66; }
+.text-pink { color: #33ff77; }
+.text-danger { color: #ff0033; }
+.text-info { color: #00cc33; }
+.text-success { color: #00ff41; }
+.text-gold { color: #00ff41; }
+
+
+/* ==========================================================================
+ * BADGES
+ * ======================================================================== */
+
+.badge-user {
+    border: 0;
+    box-shadow: none;
+    background-color: #0e1a0e;
+    text-shadow: 1px 1px 2px #000;
+    border-radius: 0;
+}
+
+.badge-extra {
+    border: 1px solid rgba(0, 255, 65, 0.08);
+    border-radius: 0;
+}
+
+.footer__icon { color: #00ff41; }
+i.torrent-icon { color: #00ff41; }
+
+
+/* ==========================================================================
+ * FULL-PAGE OVERLAYS — the Matrix atmosphere
+ * ======================================================================== */
+
+/* CRT scanlines — drifting slowly */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.04) 2px,
+        rgba(0, 0, 0, 0.04) 4px
+    );
+    animation: matrix-scanline 20s linear infinite;
+}
+
+/* Digital rain columns — faint green vertical streaks */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background-image:
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 29px,
+            rgba(0, 255, 65, 0.008) 29px,
+            rgba(0, 255, 65, 0.008) 30px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 255, 65, 0.01) 0px,
+            transparent 8px,
+            transparent 16px,
+            rgba(0, 255, 65, 0.005) 24px
+        );
+    background-size: 30px 30px, 30px 200px;
+    animation: matrix-rain 30s linear infinite;
+}
+
+/* Standalone-mode baseline: when there's no main.scss underneath, html/body
+   get nothing for free — set bg + fg + font here. Cascades safely under
+   External mode (main.scss sets the same and wins via specificity / later load). */
+html {
+    font-size: 10px;
+}
+html, body {
+    background-color: var(--body-bg, #050505);
+    color: var(--body-fg, #b0ffb0);
+    font-family: 'Courier New', Consolas, Monaco, monospace;
+    font-size: 16px;
+    line-height: 1.467;
+}
+
+/* Subtle green vignette */
+body {
+    background-image:
+        radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%),
+        radial-gradient(ellipse at center, rgba(0, 255, 65, 0.015) 0%, transparent 70%);
+    background-attachment: fixed;
+}
+
+
+/* ==========================================================================
+ * BRANDING — phosphor green glow
+ * ======================================================================== */
+
+.top-nav__site-logo {
+    color: #00ff41;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5), 0 0 20px rgba(0, 255, 65, 0.2);
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+
+/* ==========================================================================
+ * TOP NAV — green glow underline
+ * ======================================================================== */
+
+.top-nav {
+    border-bottom: 1px solid rgba(0, 255, 65, 0.08);
+    position: relative;
+}
+.top-nav::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), rgba(0, 204, 51, 0.15), rgba(0, 255, 65, 0.2), transparent);
+}
+
+/* Nav icon hover glow */
+.top-nav__icon-bar__icon {
+    transition: box-shadow 0.3s ease, text-shadow 0.3s ease;
+}
+.top-nav__icon-bar__icon:hover {
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.25);
+}
+
+/* Notification badge pulse */
+.top-nav__icon-bar__icon .badge,
+.top-nav .badge {
+    animation: matrix-pulse 2s ease-in-out infinite;
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 0;
+}
+
+
+/* ==========================================================================
+ * PANELS — sharp edges, green accent border on hover
+ * ======================================================================== */
+
+.panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 !important;
+}
+
+/* Rotating green-spectrum border on hover */
+.panel::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    background: conic-gradient(
+        from var(--matrix-angle, 0deg),
+        #00ff41,
+        #00cc33,
+        #338844,
+        #00cc33,
+        #00ff41
+    );
+    border-radius: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    animation: matrix-rotate 6s linear infinite;
+}
+.panel:hover::after {
+    opacity: 0.06;
+}
+
+/* Panel heading — terminal style with left accent */
+.panel__heading {
+    border-bottom: 1px solid rgba(0, 255, 65, 0.06);
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.88em;
+}
+.panel__heading::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: #00ff41;
+    box-shadow: 0 0 6px rgba(0, 255, 65, 0.4);
+}
+
+/* Blinking cursor after panel heading text */
+.panel__heading::after {
+    content: '\25AE';
+    margin-left: 4px;
+    color: #00ff41;
+    animation: matrix-blink 1s step-end infinite;
+    font-size: 0.9em;
+}
+
+
+/* ==========================================================================
+ * DATA TABLES — green accent lines, terminal headers
+ * ======================================================================== */
+
+.data-table tr:hover td:first-child {
+    box-shadow: inset 3px 0 0 #00ff41;
+}
+
+.data-table thead th {
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85em;
+    color: #00ff41;
+}
+.data-table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0, 255, 65, 0.2), transparent);
+}
+
+
+/* ==========================================================================
+ * TORRENT CARDS — hover lift + green scan line
+ * ======================================================================== */
+
+.torrent-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 !important;
+}
+.torrent-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 255, 65, 0.04);
+}
+
+/* Scan line sweep on hover */
+.torrent-card::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(180deg, transparent, rgba(0, 255, 65, 0.15), transparent);
+    transition: top 0.5s ease;
+    pointer-events: none;
+}
+.torrent-card:hover::after {
+    top: 150%;
+}
+
+
+/* ==========================================================================
+ * FEATURED PANE — green breathing glow
+ * ======================================================================== */
+
+.featured-pane {
+    border: 1px solid rgba(0, 255, 65, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: matrix-breathe 4s ease-in-out infinite;
+    border-radius: 0 !important;
+}
+
+
+/* ==========================================================================
+ * BUTTONS — terminal style, green glow
+ * ======================================================================== */
+
+.form__button--filled,
+.button--filled {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border-radius: 0 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9em;
+}
+.form__button--filled::before,
+.button--filled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    transition: left 0.4s ease;
+}
+.form__button--filled:hover,
+.button--filled:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3), 0 0 30px rgba(0, 255, 65, 0.08);
+}
+.form__button--filled:hover::before,
+.button--filled:hover::before {
+    left: 100%;
+}
+
+.form__button--outlined:hover,
+.button--outlined:hover {
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.25);
+    border-color: #33ff77;
+    color: #33ff77;
+}
+
+
+/* ==========================================================================
+ * ARTICLE CARDS — hover lift
+ * ======================================================================== */
+
+.article-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 0 !important;
+}
+.article-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+
+/* ==========================================================================
+ * SWEETALERT2 — terminal modals
+ * ======================================================================== */
+
+.swal2-popup {
+    background: #0a0a0a !important;
+    color: #b0ffb0 !important;
+    border: 1px solid rgba(0, 255, 65, 0.1) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 25px rgba(0, 255, 65, 0.04), 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+}
+.swal2-title { color: #00ff41 !important; text-shadow: 0 0 6px rgba(0, 255, 65, 0.3); }
+.swal2-confirm { background: #00cc33 !important; color: #000 !important; border-radius: 0 !important; }
+
+
+/* ==========================================================================
+ * CHAT FRAME — terminal-style, green accents
+ * ======================================================================== */
+
+#frame {
+    background: #0a0a0a;
+    border: 1px solid rgba(0, 255, 65, 0.06);
+    position: relative;
+}
+#frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #00ff41, #00cc33, #00ff41, transparent);
+    z-index: 5;
+}
+#frame .content .messages ul li {
+    border-bottom: 1px dashed rgba(26, 42, 26, 0.5);
+    transition: background 0.2s ease;
+}
+#frame .content .messages ul li:hover {
+    background: rgba(0, 255, 65, 0.015);
+}
+#frame .content .messages ul li > img {
+    border: 1px solid rgba(0, 255, 65, 0.15);
+}
+#frame .content .message-input .wrap input {
+    color: #b0ffb0;
+    background: #060606;
+    border: 1px solid rgba(0, 255, 65, 0.08);
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+#frame .content .message-input .wrap input:focus {
+    outline: none;
+    border-color: #00ff41;
+    box-shadow: 0 0 8px rgba(0, 255, 65, 0.15);
+}
+#frame .content .message-input .wrap button {
+    background: #00cc33;
+    color: #000;
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+#frame .content .message-input .wrap button:hover {
+    background: #00ff41;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+/* Chat bubbles */
+.sent > h4 {
+    display: block !important;
+    background-color: var(--message-bubble-bg) !important;
+    padding: 4px 12px 0 8px;
+    margin: 4px 12px 0 48px;
+}
+.sent > div {
+    display: block !important;
+    background-color: var(--message-bubble-bg) !important;
+    padding: 0 12px 4px 8px !important;
+    margin: 0 12px 4px 48px !important;
+}
+.sent > div:not(.system):before {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 38px;
+    width: 0;
+    border-right: 10px solid var(--message-bubble-bg) !important;
+    border-top: 10px solid transparent;
+}
+#frame .content .messages ul li.sent {
+    border: 0;
+    display: table;
+    max-width: 85%;
+    width: auto;
+}
+#frame .content .messages ul li.sent img.chat-user-image {
+    height: 40px;
+    width: 40px;
+    border-radius: 0;
+}
+
+/* Typing indicator flicker */
+.chatbox .typing {
+    color: #b0ffb0;
+    animation: matrix-flicker 4s infinite;
+}
+
+
+/* ==========================================================================
+ * SCROLLBAR — green on black, sharp
+ * ======================================================================== */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #030303; }
+::-webkit-scrollbar-thumb {
+    background: #1a2a1a;
+    border: 1px solid rgba(0, 255, 65, 0.05);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #00cc33;
+    box-shadow: 0 0 6px rgba(0, 255, 65, 0.4);
+}
+
+
+/* ==========================================================================
+ * INPUTS — green focus glow
+ * ======================================================================== */
+
+input:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 6px rgba(0, 255, 65, 0.15), 0 0 2px rgba(0, 255, 65, 0.08);
+}
+
+
+/* ==========================================================================
+ * VIRTUAL SELECT — terminal dropdown
+ * ======================================================================== */
+
+.vscomp-toggle-button {
+    background-color: #0a0a0a;
+    border-color: #1a2a1a;
+    border-radius: 0;
+    transition: border-color 0.3s ease;
+}
+.vscomp-toggle-button:hover { border-color: rgba(0, 255, 65, 0.2); }
+.vscomp-dropbox {
+    background-color: #060606;
+    border-color: rgba(0, 255, 65, 0.08);
+    border-radius: 0;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
+.vscomp-option { transition: background-color 0.2s ease; }
+.vscomp-option:hover, .vscomp-option.focused { background-color: #0e1a0e; }
+.vscomp-option.selected { background-color: rgba(0, 255, 65, 0.05); border-left: 2px solid #00ff41; }
+.vscomp-search-input { background-color: #050505; color: #b0ffb0; border-color: #1a2a1a; border-radius: 0; }
+
+
+/* ==========================================================================
+ * USER STAT CARDS — hover effect with green top line
+ * ======================================================================== */
+
+.user-stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 !important;
+}
+.user-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.user-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #00ff41;
+    box-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.user-stat-card:hover::before { opacity: 1; }
+
+
+/* ==========================================================================
+ * MEDIAHUB, PLAYLIST, ACHIEVEMENT CARDS — hover effects
+ * ======================================================================== */
+
+.mediahub-card, .playlist-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 0 !important;
+}
+.mediahub-card:hover, .playlist-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.achievement {
+    transition: transform 0.3s ease;
+    border-radius: 0 !important;
+}
+.achievement:hover {
+    transform: scale(1.03);
+}
+
+
+/* ==========================================================================
+ * LINKS — green underline animation (content areas only)
+ * ======================================================================== */
+
+.panel__body a:not([class]),
+.post__body a:not([class]),
+.bbcode-rendered a:not([class]) {
+    position: relative;
+    text-decoration: none;
+}
+.panel__body a:not([class])::after,
+.post__body a:not([class])::after,
+.bbcode-rendered a:not([class])::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #00ff41;
+    box-shadow: 0 0 3px rgba(0, 255, 65, 0.4);
+    transition: width 0.3s ease;
+}
+.panel__body a:not([class]):hover::after,
+.post__body a:not([class]):hover::after,
+.bbcode-rendered a:not([class]):hover::after {
+    width: 100%;
+}
+
+
+/* ==========================================================================
+ * MISC — pagination, breadcrumbs, HRs, seeders/leechers glow, footer
+ * ======================================================================== */
+
+.pagination__link { transition: all 0.2s ease; }
+.pagination__link:hover { box-shadow: 0 0 6px rgba(0, 255, 65, 0.15); }
+
+.breadcrumb a:hover { text-shadow: 0 0 4px rgba(0, 255, 65, 0.2); }
+
+.secondary-nav__tab:hover { text-shadow: 0 0 4px rgba(0, 255, 65, 0.2); }
+
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.15), rgba(0, 204, 51, 0.1), rgba(0, 255, 65, 0.15), transparent);
+}
+
+.meter__bar { box-shadow: 0 0 4px rgba(0, 255, 65, 0.15); }
+
+.torrent-row__seeders { text-shadow: 0 0 3px rgba(0, 255, 65, 0.2); }
+.torrent-row__leechers { text-shadow: 0 0 3px rgba(255, 0, 51, 0.2); }
+
+/* Footer green top border */
+footer, .footer { position: relative; }
+footer::before, .footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), rgba(0, 204, 51, 0.15), rgba(0, 255, 65, 0.2), transparent);
+}
+
+.badge-user:hover { box-shadow: 0 0 6px rgba(0, 255, 65, 0.15); }
+.badge-extra:hover { border-color: rgba(0, 255, 65, 0.2); }
+
+.donation-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+
+.post { transition: border-color 0.3s ease; }
+.post:hover { border-color: rgba(0, 255, 65, 0.06); }
+
+
+/* ==========================================================================
+ * TEXT SELECTION — green
+ * ======================================================================== */
+
+::selection { background: rgba(0, 255, 65, 0.2); color: #fff; }
+::-moz-selection { background: rgba(0, 255, 65, 0.2); color: #fff; }
+
+
+/* ==========================================================================
+ * FOCUS RINGS — green
+ * ======================================================================== */
+
+:focus-visible {
+    outline: 2px solid rgba(0, 255, 65, 0.4);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+ * HEADINGS — terminal uppercase + spacing
+ * ======================================================================== */
+
+h1, h2, h3 { letter-spacing: 1px; }
+
+
+/* ==========================================================================
+ * KEY-VALUE TABLES — green left accent
+ * ======================================================================== */
+
+.key-value__row:nth-child(odd) { position: relative; }
+.key-value__row:nth-child(odd)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(0, 255, 65, 0.1);
+}
+
+
+/* ==========================================================================
+ * QUICK SEARCH — green top accent
+ * ======================================================================== */
+
+.quick-search__results {
+    position: relative;
+    border: 1px solid rgba(0, 255, 65, 0.06);
+    border-radius: 0;
+}
+.quick-search__results::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #00ff41, transparent);
+}
+
+
+/* ==========================================================================
+ * REDUCED MOTION — respect accessibility
+ * ======================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    body::before, body::after { animation: none !important; }
+}
